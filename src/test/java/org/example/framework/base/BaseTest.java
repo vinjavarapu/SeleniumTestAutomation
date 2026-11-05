@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.lang.reflect.Method;
 
 import org.example.framework.driver.DriverManager;
 import org.openqa.selenium.WebDriver;
@@ -16,6 +17,9 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.Test;
+import org.example.framework.utils.ExtentReportManager;
 import org.testng.ITestResult;
 
 import org.apache.logging.log4j.LogManager;
@@ -27,7 +31,9 @@ public abstract class BaseTest {
     protected final Logger logger = LogManager.getLogger(getClass());
 
     @BeforeMethod(alwaysRun = true)
-    public void startBrowser() {
+    public void startBrowser(Method method) {
+        Test testAnnotation = method.getAnnotation(Test.class);
+        ExtentReportManager.startTest(method.getName(), testAnnotation == null ? "" : testAnnotation.description());
         String browserName = System.getProperty("browser", "chrome");
         boolean headless = Boolean.parseBoolean(System.getProperty("headless", "true"));
         logger.info("Starting {} browser (headless={})", browserName, headless);
@@ -54,14 +60,29 @@ public abstract class BaseTest {
             WebDriver driver = DriverManager.getDriver();
             if (result.getStatus() == ITestResult.FAILURE) {
                 logger.error("Test '{}' failed on URL {}", result.getName(), driver.getCurrentUrl());
+                ExtentReportManager.fail(result.getThrowable());
+                ExtentReportManager.attachScreenshot(
+                        ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES), "Failure screenshot");
                 saveFailureScreenshot(driver, result.getName());
+            } else if (result.getStatus() == ITestResult.SUCCESS) {
+                ExtentReportManager.pass("Test completed successfully");
+            } else if (result.getStatus() == ITestResult.SKIP) {
+                ExtentReportManager.skipped(result.getThrowable() == null
+                        ? "Test was skipped" : result.getThrowable().toString());
             }
         } catch (IllegalStateException exception) {
             logger.debug("No browser was available during teardown");
         } finally {
             logger.info("Closing browser");
             DriverManager.quitDriver();
+            ExtentReportManager.clearCurrentTest();
         }
+    }
+
+    @AfterSuite(alwaysRun = true)
+    public void writeExtentReport() {
+        ExtentReportManager.flush();
+        logger.info("Extent report saved to {}", ExtentReportManager.reportPath().toAbsolutePath());
     }
 
     protected WebDriver getDriver() {

@@ -10,6 +10,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.example.framework.utils.ExtentReportManager;
 
 /** Shared Selenium actions and explicit waits for page objects. */
 public abstract class BasePage {
@@ -30,18 +31,21 @@ public abstract class BasePage {
 
     protected void click(By locator, String actionDescription) {
         logger.info("{}", actionDescription);
+        ExtentReportManager.step(actionDescription);
         wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
     }
 
     /** Used only for the SauceDemo checkout controls; native clicks are not advancing them in headless Chrome here. */
     protected void clickCheckoutControl(By locator, String actionDescription) {
         logger.info("{}", actionDescription);
+        ExtentReportManager.step(actionDescription);
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
     }
 
     protected void enterText(By locator, String value, String actionDescription) {
         logger.info("{}", actionDescription);
+        ExtentReportManager.step(actionDescription);
         WebElement field = visibleElement(locator);
         String existingValue = field.getDomProperty("value");
         if (existingValue != null && !existingValue.isEmpty()) {
