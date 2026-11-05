@@ -11,25 +11,39 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 /** Common browser lifecycle for TestNG test classes. */
 public abstract class BaseTest {
+    protected final Logger logger = LogManager.getLogger(getClass());
+
     @BeforeMethod(alwaysRun = true)
     public void startBrowser() {
-        WebDriver driver = createDriver(System.getProperty("browser", "chrome"));
-        DriverManager.setDriver(driver);
+        String browserName = System.getProperty("browser", "chrome");
+        boolean headless = Boolean.parseBoolean(System.getProperty("headless", "true"));
+        logger.info("Starting {} browser (headless={})", browserName, headless);
 
-        long implicitWaitSeconds = Long.parseLong(System.getProperty("implicitWaitSeconds", "0"));
-        if (implicitWaitSeconds > 0) {
-            // Explicit waits are preferred. Keep this at 0 unless a project requirement needs implicit waits.
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitWaitSeconds));
+        try {
+            WebDriver driver = createDriver(browserName, headless);
+            DriverManager.setDriver(driver);
+
+            long implicitWaitSeconds = Long.parseLong(System.getProperty("implicitWaitSeconds", "0"));
+            if (implicitWaitSeconds > 0) {
+                // Explicit waits are preferred. Keep this at 0 unless a project requirement needs implicit waits.
+                driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitWaitSeconds));
+            }
+            driver.manage().window().maximize();
+        } catch (RuntimeException exception) {
+            logger.error("Could not start the {} browser", browserName, exception);
+            throw exception;
         }
-        driver.manage().window().maximize();
     }
 
     @AfterMethod(alwaysRun = true)
     public void stopBrowser() {
+        logger.info("Closing browser");
         DriverManager.quitDriver();
     }
 
@@ -42,8 +56,7 @@ public abstract class BaseTest {
         return new WebDriverWait(getDriver(), Duration.ofSeconds(timeoutSeconds));
     }
 
-    private WebDriver createDriver(String browserName) {
-        boolean headless = Boolean.parseBoolean(System.getProperty("headless", "true"));
+    private WebDriver createDriver(String browserName, boolean headless) {
         return switch (browserName.trim().toLowerCase()) {
             case "chrome" -> {
                 WebDriverManager.chromedriver().setup();
