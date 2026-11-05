@@ -13,6 +13,7 @@ public class CheckoutInformationPage extends BasePage {
 
     public CheckoutInformationPage(WebDriver driver) {
         super(driver);
+        logger.info("Checkout information page state: url={}, title={}", driver.getCurrentUrl(), driver.getTitle());
         visibleElement(firstNameField);
     }
 
@@ -23,6 +24,7 @@ public class CheckoutInformationPage extends BasePage {
     }
 
     public void continueToOverview() {
-        click(continueButton, "Continuing to the checkout overview");
+        clickCheckoutControl(continueButton, "Continuing to the checkout overview");
+        wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("checkout-step-two.html"));
     }
 }

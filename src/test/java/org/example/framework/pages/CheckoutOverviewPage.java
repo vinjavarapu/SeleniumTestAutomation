@@ -24,6 +24,6 @@ public class CheckoutOverviewPage extends BasePage {
     }
 
     public void placeOrder() {
-        click(finishButton, "Placing the order");
+        clickCheckoutControl(finishButton, "Placing the order");
     }
 }

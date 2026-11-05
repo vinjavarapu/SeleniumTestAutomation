@@ -1,15 +1,22 @@
 package org.example.framework.base;
 
 import java.time.Duration;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import org.example.framework.driver.DriverManager;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.ITestResult;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,9 +49,19 @@ public abstract class BaseTest {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void stopBrowser() {
-        logger.info("Closing browser");
-        DriverManager.quitDriver();
+    public void stopBrowser(ITestResult result) {
+        try {
+            WebDriver driver = DriverManager.getDriver();
+            if (result.getStatus() == ITestResult.FAILURE) {
+                logger.error("Test '{}' failed on URL {}", result.getName(), driver.getCurrentUrl());
+                saveFailureScreenshot(driver, result.getName());
+            }
+        } catch (IllegalStateException exception) {
+            logger.debug("No browser was available during teardown");
+        } finally {
+            logger.info("Closing browser");
+            DriverManager.quitDriver();
+        }
     }
 
     protected WebDriver getDriver() {
@@ -61,7 +78,7 @@ public abstract class BaseTest {
             case "chrome" -> {
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions options = new ChromeOptions();
-                if (headless) options.addArguments("--headless=new");
+                if (headless) options.addArguments("--headless=new", "--window-size=1920,1080");
                 yield new org.openqa.selenium.chrome.ChromeDriver(options);
             }
             case "firefox" -> {
@@ -79,5 +96,18 @@ public abstract class BaseTest {
             default -> throw new IllegalArgumentException(
                     "Unsupported browser '" + browserName + "'. Choose chrome, firefox, or edge.");
         };
+    }
+
+    private void saveFailureScreenshot(WebDriver driver, String testName) {
+        try {
+            Path screenshotDirectory = Path.of("target", "screenshots");
+            Files.createDirectories(screenshotDirectory);
+            Path screenshotPath = screenshotDirectory.resolve(testName + ".png");
+            Files.copy(((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE).toPath(),
+                    screenshotPath, StandardCopyOption.REPLACE_EXISTING);
+            logger.info("Saved failure screenshot to {}", screenshotPath.toAbsolutePath());
+        } catch (IOException | RuntimeException exception) {
+            logger.warn("Could not save failure screenshot", exception);
+        }
     }
 }
