@@ -34,6 +34,7 @@ public class InventoryPage extends BasePage {
     }
 
     public List<String> getProductNames() {
+        wait.until(d -> d.findElements(productNames).size() > 0);
         return driver.findElements(productNames).stream().map(WebElement::getText).toList();
     }
 
@@ -42,16 +43,19 @@ public class InventoryPage extends BasePage {
     }
 
     public List<String> getProductPrices() {
+        wait.until(d -> d.findElements(productNames).size() > 0);
         return driver.findElements(By.cssSelector(".inventory_item_price")).stream()
                 .map(WebElement::getText).toList();
     }
 
     public List<String> getProductImageSources() {
+        wait.until(d -> d.findElements(productNames).size() > 0);
         return driver.findElements(By.cssSelector(".inventory_item_img img")).stream()
                 .map(image -> image.getAttribute("src")).toList();
     }
 
     public List<Boolean> getProductImagesLoaded() {
+        wait.until(d -> d.findElements(productNames).size() > 0);
         return driver.findElements(By.cssSelector(".inventory_item_img img")).stream()
                 .map(image -> Boolean.parseBoolean(image.getDomProperty("complete"))
                         && !"0".equals(image.getDomProperty("naturalWidth"))).toList();
