@@ -25,6 +25,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /** Functional regression coverage based on the SauceDemo test case catalogue. */
+@Test(groups = "regression")
 public class CatalogueRegressionTests extends BaseTest {
     private InventoryPage login() {
         LoginPage page = new LoginPage(getDriver());

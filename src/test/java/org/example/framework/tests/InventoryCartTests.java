@@ -8,6 +8,7 @@ import org.example.framework.utils.TestDataReader;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+@Test(groups = "regression")
 public class InventoryCartTests extends BaseTest {
     private InventoryPage loginToInventory() {
         LoginPage loginPage = new LoginPage(getDriver());

@@ -73,6 +73,8 @@ public class InventoryPage extends BasePage {
     }
 
     public void openProductDetails(String productName) {
+        wait.until(d -> d.findElements(productNames).stream()
+                .anyMatch(link -> link.getText().equals(productName)));
         List<WebElement> links = driver.findElements(productNames);
         links.stream().filter(link -> link.getText().equals(productName)).findFirst()
                 .orElseThrow(() -> new AssertionError("Product not found in inventory: " + productName)).click();

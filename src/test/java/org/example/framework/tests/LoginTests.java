@@ -22,7 +22,7 @@ public class LoginTests extends BaseTest {
         logger.info("Valid-login test passed");
     }
 
-    @Test(description = "Invalid SauceDemo credentials are rejected")
+    @Test(groups = "smoke", description = "Invalid SauceDemo credentials are rejected")
     public void invalidUserSeesLoginError() {
         logger.info("Starting invalid-login test");
         LoginPage loginPage = new LoginPage(getDriver());
