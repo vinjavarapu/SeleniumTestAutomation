@@ -26,7 +26,7 @@ public class CheckoutInformationPage extends BasePage {
     }
 
     public void continueToOverview() {
-        clickCheckoutControl(continueButton, "Continuing to the checkout overview");
+        click(continueButton, "Continuing to the checkout overview");
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("checkout-step-two.html"));
     }
 
@@ -34,13 +34,13 @@ public class CheckoutInformationPage extends BasePage {
         if (firstName != null) enterText(firstNameField, firstName, "Entering checkout first name");
         if (lastName != null) enterText(lastNameField, lastName, "Entering checkout last name");
         if (postalCode != null) enterText(postalCodeField, postalCode, "Entering checkout postal code");
-        clickCheckoutControl(continueButton, "Continuing checkout");
+        click(continueButton, "Continuing checkout");
     }
 
     public String getErrorMessage() { return readText(errorMessage); }
 
     public void cancel() {
-        clickCheckoutControl(cancelButton, "Canceling checkout");
+        click(cancelButton, "Canceling checkout");
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("cart.html"));
     }
 }

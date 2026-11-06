@@ -8,7 +8,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class LoginTests extends BaseTest {
-    @Test(description = "A valid SauceDemo user can sign in")
+    @Test(groups = "smoke", description = "A valid SauceDemo user can sign in")
     public void validUserCanLogIn() {
         logger.info("Starting valid-login test");
         LoginPage loginPage = new LoginPage(getDriver());

@@ -59,7 +59,7 @@ public class CartPage extends BasePage {
         String productId = productName.trim().toLowerCase().replaceAll("[^a-z0-9]+", "-");
         int previousCount = getItemCount();
         By removeButton = By.cssSelector("[data-test='remove-" + productId + "']");
-        clickCheckoutControl(removeButton, "Removing product from cart: " + productName);
+        click(removeButton, "Removing product from cart: " + productName);
         wait.until(driver -> getItemCount() == previousCount - 1);
     }
 
@@ -70,7 +70,7 @@ public class CartPage extends BasePage {
     }
 
     public void clickCheckout() {
-        clickCheckoutControl(checkoutButton, "Starting checkout");
+        click(checkoutButton, "Starting checkout");
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("checkout-step-one.html"));
     }
 }

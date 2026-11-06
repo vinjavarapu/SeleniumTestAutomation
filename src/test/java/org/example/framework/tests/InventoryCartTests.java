@@ -18,7 +18,7 @@ public class InventoryCartTests extends BaseTest {
         return inventoryPage;
     }
 
-    @Test(description = "Inventory displays products including the configured product")
+    @Test(groups = "regression", description = "Inventory displays products including the configured product")
     public void inventoryProductsAreDisplayed() {
         InventoryPage inventoryPage = loginToInventory();
         Assert.assertEquals(inventoryPage.getProductNames().size(), 6, "Expected six products in inventory");

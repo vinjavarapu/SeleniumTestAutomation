@@ -2,17 +2,17 @@ package org.example.framework.utils;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
-import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
+import org.example.framework.config.FrameworkConfig;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /** Creates the HTML report and stores the current test for each TestNG thread. */
 public final class ExtentReportManager {
-    private static final Path REPORT_PATH = Path.of("target", "extent-reports", "SauceDemo-Test-Report.html");
-    private static final ThreadLocal<ExtentTest> CURRENT_TEST = new ThreadLocal<>();
     private static final String REPORT_SUMMARY_SCRIPT = """
             (function () {
               function addRunSummary() {
@@ -55,28 +55,33 @@ public final class ExtentReportManager {
               }
             })();
             """;
+    private static final ThreadLocal<ExtentTest> CURRENT_TEST = new ThreadLocal<>();
     private static ExtentReports extent;
+    private static Path reportPath;
 
     private ExtentReportManager() {
     }
 
     private static synchronized ExtentReports getExtent() {
         if (extent == null) {
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            reportPath = Path.of("target", "extent-reports", "Test-Report-" + timestamp + ".html");
             try {
-                Files.createDirectories(REPORT_PATH.getParent());
+                Files.createDirectories(reportPath.getParent());
             } catch (Exception exception) {
                 throw new IllegalStateException("Could not create the Extent report directory", exception);
             }
-            ExtentSparkReporter spark = new ExtentSparkReporter(REPORT_PATH.toString());
-            spark.config().setDocumentTitle("SauceDemo Automation Results");
-            spark.config().setReportName("SauceDemo Test Execution");
+            ExtentSparkReporter spark = new ExtentSparkReporter(reportPath.toString());
+            spark.config().setDocumentTitle("Test Automation Results");
+            spark.config().setReportName(FrameworkConfig.reportName());
             spark.config().setTheme(Theme.DARK);
             spark.config().setJs(REPORT_SUMMARY_SCRIPT);
             extent = new ExtentReports();
             extent.attachReporter(spark);
             extent.setSystemInfo("Framework", "Selenium + Java + TestNG");
-            extent.setSystemInfo("Browser", System.getProperty("browser", "chrome"));
-            extent.setSystemInfo("Headless", System.getProperty("headless", "true"));
+            extent.setSystemInfo("Environment", FrameworkConfig.environment());
+            extent.setSystemInfo("Browser", FrameworkConfig.browser());
+            extent.setSystemInfo("Headless", String.valueOf(FrameworkConfig.headless()));
             extent.setSystemInfo("OS", System.getProperty("os.name"));
         }
         return extent;
@@ -124,7 +129,10 @@ public final class ExtentReportManager {
     }
 
     public static Path reportPath() {
-        return REPORT_PATH;
+        if (reportPath == null) {
+            getExtent();
+        }
+        return reportPath;
     }
 
     public static void clearCurrentTest() {

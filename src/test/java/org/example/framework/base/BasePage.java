@@ -4,13 +4,14 @@ import java.time.Duration;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.example.framework.config.FrameworkConfig;
+import org.example.framework.utils.ExtentReportManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.example.framework.utils.ExtentReportManager;
 
 /** Shared Selenium actions and explicit waits for page objects. */
 public abstract class BasePage {
@@ -21,7 +22,7 @@ public abstract class BasePage {
     protected BasePage(WebDriver driver) {
         this.driver = driver;
         this.logger = LogManager.getLogger(getClass());
-        long timeoutSeconds = Long.parseLong(System.getProperty("explicitWaitSeconds", "10"));
+        long timeoutSeconds = FrameworkConfig.explicitWaitSeconds();
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds));
     }
 
@@ -30,14 +31,6 @@ public abstract class BasePage {
     }
 
     protected void click(By locator, String actionDescription) {
-        logger.info("{}", actionDescription);
-        ExtentReportManager.step(actionDescription);
-        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
-    }
-
-    /** Activates SauceDemo's animated React controls consistently in headless browsers. */
-    protected void clickCheckoutControl(By locator, String actionDescription) {
         logger.info("{}", actionDescription);
         ExtentReportManager.step(actionDescription);
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
@@ -79,5 +72,13 @@ public abstract class BasePage {
         } catch (org.openqa.selenium.TimeoutException exception) {
             return false;
         }
+    }
+
+    protected void waitForUrlContains(String expectedUrl) {
+        wait.until(ExpectedConditions.urlContains(expectedUrl));
+    }
+
+    protected void waitForInvisibility(By locator) {
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
     }
 }

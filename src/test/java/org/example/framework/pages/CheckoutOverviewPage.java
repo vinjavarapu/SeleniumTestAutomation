@@ -29,7 +29,7 @@ public class CheckoutOverviewPage extends BasePage {
     }
 
     public void placeOrder() {
-        clickCheckoutControl(finishButton, "Placing the order");
+        click(finishButton, "Placing the order");
     }
 
     public List<String> getItemPrices() {
@@ -39,7 +39,7 @@ public class CheckoutOverviewPage extends BasePage {
     public String getTax() { return readText(tax); }
     public String getTotal() { return readText(total); }
     public void cancel() {
-        clickCheckoutControl(cancelButton, "Canceling from order overview");
+        click(cancelButton, "Canceling from order overview");
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory.html"));
     }
 }

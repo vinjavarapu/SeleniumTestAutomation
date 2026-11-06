@@ -73,8 +73,42 @@
                 <version>3.5.4</version>
                 <configuration>
                     <useModulePath>false</useModulePath>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>${suite.xml}</suiteXmlFile>
+                    </suiteXmlFiles>
+                    <systemPropertyVariables>
+                        <browser>${browser}</browser>
+                        <headless>${headless}</headless>
+                        <env>${env}</env>
+                        <explicitWaitSeconds>${explicitWaitSeconds}</explicitWaitSeconds>
+                        <implicitWaitSeconds>${implicitWaitSeconds}</implicitWaitSeconds>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>smoke</id>
+            <properties>
+                <suite.xml>src/test/resources/suites/smoke.xml</suite.xml>
+            </properties>
+        </profile>
+        <profile>
+            <id>regression</id>
+            <properties>
+                <suite.xml>src/test/resources/suites/regression.xml</suite.xml>
+            </properties>
+        </profile>
+        <profile>
+            <id>all</id>
+            <properties>
+                <suite.xml>src/test/resources/suites/all.xml</suite.xml>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+    </profiles>
 </project>

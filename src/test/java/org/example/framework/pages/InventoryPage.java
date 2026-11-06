@@ -88,7 +88,7 @@ public class InventoryPage extends BasePage {
         click(allItemsLink, "Selecting All Items");
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory.html"));
     }
-    public void clickAbout() { clickCheckoutControl(aboutLink, "Opening Sauce Labs About page"); }
+    public void clickAbout() { click(aboutLink, "Opening Sauce Labs About page"); }
 
     public boolean hasRemoveButton(String productName) {
         return driver.findElements(By.cssSelector("[data-test='remove-" + productId(productName) + "']")).size() > 0;
@@ -114,7 +114,7 @@ public class InventoryPage extends BasePage {
     }
 
     public void openCart() {
-        clickCheckoutControl(cartLink, "Opening the shopping cart");
+        click(cartLink, "Opening the shopping cart");
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("cart.html"));
     }
 }

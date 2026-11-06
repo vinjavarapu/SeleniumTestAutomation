@@ -6,15 +6,20 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
 
 permissions:
   contents: read
 
 jobs:
-  test:
-    name: Maven tests (Chrome, headless)
+  smoke:
+    name: Smoke tests (${{ matrix.browser }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      matrix:
+        browser: [chrome, firefox]
 
     steps:
       - name: Check out repository
@@ -27,5 +32,47 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Run tests
-        run: mvn --batch-mode --no-transfer-progress clean verify -Dbrowser=chrome -Dheadless=true
+      - name: Run smoke tests
+        run: mvn --batch-mode --no-transfer-progress clean test -Psmoke -Dbrowser=${{ matrix.browser }} -Dheadless=true
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-reports-${{ matrix.browser }}
+          path: |
+            target/extent-reports/
+            target/screenshots/
+            target/logs/
+          retention-days: 30
+
+  regression:
+    name: Regression tests (Chrome)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Run regression tests
+        run: mvn --batch-mode --no-transfer-progress clean test -Pregression -Dbrowser=chrome -Dheadless=true
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-reports
+          path: |
+            target/extent-reports/
+            target/screenshots/
+            target/logs/
+          retention-days: 30

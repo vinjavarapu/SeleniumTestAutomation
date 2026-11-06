@@ -1,13 +1,12 @@
 package org.example.framework.pages;
 
 import org.example.framework.base.BasePage;
+import org.example.framework.config.FrameworkConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 /** Page object for SauceDemo's login screen. */
 public class LoginPage extends BasePage {
-    private static final String URL = "https://www.saucedemo.com/";
-
     private final By usernameField = By.id("user-name");
     private final By passwordField = By.id("password");
     private final By loginButton = By.id("login-button");
@@ -18,8 +17,8 @@ public class LoginPage extends BasePage {
     }
 
     public void open() {
-        logger.info("Opening SauceDemo login page");
-        driver.get(URL);
+        logger.info("Opening login page");
+        driver.get(FrameworkConfig.baseUrl());
         try {
             visibleElement(usernameField);
         } catch (org.openqa.selenium.TimeoutException firstLoadFailure) {

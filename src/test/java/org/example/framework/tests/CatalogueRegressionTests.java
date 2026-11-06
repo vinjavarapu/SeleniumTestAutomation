@@ -45,7 +45,7 @@ public class CatalogueRegressionTests extends BaseTest {
         return new CheckoutOverviewPage(getDriver());
     }
 
-    @Test(description = "SD-001: Login controls are visible on the login page")
+    @Test(groups = "regression", description = "SD-001: Login controls are visible on the login page")
     public void loginPageShowsRequiredControls() {
         LoginPage page = new LoginPage(getDriver());
         page.open();

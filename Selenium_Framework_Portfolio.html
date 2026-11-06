@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SauceDemo Selenium Framework | Portfolio Overview</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #e8eef5; color: #17263d; font-family: Arial, Helvetica, sans-serif; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { width: 210mm; height: 297mm; padding: 13mm 15mm 11mm; margin: 0 auto 8mm; background: #fff; position: relative; overflow: hidden; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .topline { display: flex; justify-content: space-between; align-items: center; color: #58718e; font-size: 8pt; letter-spacing: 1.2px; text-transform: uppercase; font-weight: 700; }
+  .pill { background: #e5f4f2; color: #147d77; padding: 6px 10px; border-radius: 20px; letter-spacing: .5px; }
+  h1 { font-size: 29pt; line-height: 1.06; letter-spacing: -.8px; margin: 13mm 0 3mm; color: #122542; }
+  .subtitle { margin: 0; color: #526984; font-size: 12pt; line-height: 1.45; }
+  .accent { color: #078c85; }
+  .metrics { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; margin: 9mm 0 8mm; }
+  .metric { border: 1px solid #dbe5ef; background: #f7f9fc; border-radius: 8px; padding: 10px 11px; min-height: 20mm; }
+  .metric strong { display: block; font-size: 17pt; color: #087f7b; margin-bottom: 2px; }
+  .metric span { font-size: 8pt; color: #5a6d84; line-height: 1.25; }
+  .section-title { margin: 6mm 0 3mm; font-size: 11pt; color: #173354; letter-spacing: .2px; }
+  .section-title small { color: #7b8da2; font-size: 8pt; font-weight: 400; margin-left: 5px; }
+  .intro { font-size: 9.2pt; line-height: 1.55; color: #3f536c; margin: 0 0 4mm; }
+  .architecture { background: #122542; border-radius: 10px; padding: 7mm; color: #fff; }
+  .architecture-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5mm; }
+  .architecture-head b { font-size: 10pt; }
+  .architecture-head span { font-size: 7.5pt; color: #a9bfd7; }
+  .flow { display: grid; grid-template-columns: 1fr 8mm 1fr 8mm 1fr 8mm 1fr; align-items: center; gap: 2px; }
+  .layer { min-height: 21mm; border: 1px solid #3b5574; background: #1b3455; border-radius: 7px; padding: 7px; }
+  .layer b { display: block; font-size: 8pt; margin-bottom: 4px; color: #fff; }
+  .layer span { display: block; font-size: 6.7pt; line-height: 1.35; color: #c4d3e3; }
+  .arrow { color: #51c2b7; font-size: 15pt; text-align: center; }
+  .site { text-align: center; border-top: 1px solid #385273; margin-top: 5mm; padding-top: 4mm; font-size: 8pt; color: #b9cadd; }
+  .site b { color: #66d4c9; }
+  .design-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 3mm; }
+  .design-card { border-left: 3px solid #16a39a; background: #f5f8fb; padding: 8px 10px; border-radius: 0 6px 6px 0; min-height: 25mm; }
+  .design-card b { display: block; color: #1c385b; font-size: 8.5pt; margin-bottom: 3px; }
+  .design-card p { margin: 0; color: #586d84; font-size: 7.6pt; line-height: 1.4; }
+  .stack { margin-top: 5mm; border-top: 1px solid #e1e8ef; padding-top: 4mm; color: #526984; font-size: 8pt; line-height: 1.55; }
+  .stack b { color: #173354; }
+  .page-header { border-bottom: 1px solid #e0e7ef; padding-bottom: 5mm; margin-bottom: 4mm; }
+  h2 { margin: 6mm 0 2mm; font-size: 21pt; color: #122542; letter-spacing: -.3px; }
+  .page-header p { margin: 0; font-size: 9pt; color: #60748b; line-height: 1.4; }
+  .coverage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .coverage { border: 1px solid #dce5ee; border-radius: 8px; padding: 9px 11px; min-height: 34mm; }
+  .coverage h3 { margin: 0 0 5px; font-size: 9pt; color: #087f7b; }
+  .coverage p { margin: 0; font-size: 7.7pt; color: #4e637a; line-height: 1.42; }
+  .coverage.wide { grid-column: span 2; min-height: 26mm; }
+  .operating { display: grid; grid-template-columns: 1.1fr .9fr; gap: 8px; margin-top: 6mm; }
+  .panel { background: #f5f8fb; border: 1px solid #e0e8f0; border-radius: 8px; padding: 10px 12px; }
+  .panel h3 { margin: 0 0 6px; color: #173354; font-size: 9pt; }
+  .panel p, .panel li { font-size: 7.6pt; color: #536980; line-height: 1.45; }
+  .panel p { margin: 0 0 5px; }
+  .panel ul { margin: 4px 0 0; padding-left: 15px; }
+  .code { margin-top: 5mm; background: #122542; border-radius: 8px; color: #e7f0fa; padding: 9px 12px; font-family: Consolas, "Courier New", monospace; font-size: 8pt; line-height: 1.45; }
+  .code .label { font-family: Arial, sans-serif; font-weight: 700; color: #66d4c9; display: block; margin-bottom: 4px; font-size: 7.5pt; }
+  .project-link { margin-top: 5mm; background: #eaf6f4; border: 1px solid #cce9e5; border-radius: 8px; padding: 9px 12px; display: flex; justify-content: space-between; align-items: center; }
+  .project-link b { font-size: 8.5pt; color: #145b5c; }
+  .project-link a { color: #087f7b; font-size: 8pt; text-decoration: none; font-weight: 700; }
+  .scope-note { margin-top: 3mm; color: #77899c; font-size: 7pt; line-height: 1.35; }
+  .footer { position: absolute; bottom: 7mm; left: 15mm; right: 15mm; border-top: 1px solid #e5ebf1; padding-top: 3mm; display: flex; justify-content: space-between; color: #8393a5; font-size: 7pt; }
+  @media screen { .page { box-shadow: 0 8px 30px rgba(22,44,72,.12); } }
+  @media print { html, body { background: #fff; } .page { margin: 0; box-shadow: none; } }
+</style>
+</head>
+<body>
+<section class="page">
+  <div class="topline"><span>Automation Engineering · Portfolio</span><span class="pill">Java · Selenium · TestNG</span></div>
+  <h1>SauceDemo UI<br><span class="accent">Automation Framework</span></h1>
+  <p class="subtitle">A maintainable browser automation project for validating an end-to-end e-commerce journey, from login through order confirmation.</p>
+
+  <div class="metrics">
+    <div class="metric"><strong>44</strong><span>Test executions<br>passing locally</span></div>
+    <div class="metric"><strong>58</strong><span>Scenarios in the<br>source catalogue</span></div>
+    <div class="metric"><strong>3</strong><span>Configurable browsers<br>Chrome · Firefox · Edge</span></div>
+    <div class="metric"><strong>CI</strong><span>GitHub Actions<br>headless Chrome</span></div>
+  </div>
+
+  <h2 class="section-title">Framework design <small>Page Object Model with reusable test infrastructure</small></h2>
+  <p class="intro">Tests describe customer behavior and verify outcomes. Page objects keep locators and page actions together, while shared base classes handle browser lifecycle, waits, and common interactions.</p>
+
+  <div class="architecture">
+    <div class="architecture-head"><b>Test flow and supporting layers</b><span>Clear ownership · isolated responsibilities</span></div>
+    <div class="flow">
+      <div class="layer"><b>TestNG tests</b><span>Scenario setup<br>Assertions<br>Data providers</span></div>
+      <div class="arrow">›</div>
+      <div class="layer"><b>Page objects</b><span>Login · Inventory<br>Product · Cart<br>Checkout · Complete</span></div>
+      <div class="arrow">›</div>
+      <div class="layer"><b>Shared base</b><span>BaseTest lifecycle<br>BasePage waits<br>Reusable actions</span></div>
+      <div class="arrow">›</div>
+      <div class="layer"><b>WebDriver</b><span>Browser setup<br>Thread-local driver<br>Headless or visible</span></div>
+    </div>
+    <div class="site">Validated application: <b>SauceDemo</b> · https://www.saucedemo.com/</div>
+  </div>
+
+  <h2 class="section-title">Design choices</h2>
+  <div class="design-grid">
+    <div class="design-card"><b>Tests stay readable</b><p>Test classes hold scenario intent and assertions. Page classes expose focused actions and read-only state.</p></div>
+    <div class="design-card"><b>Browser setup is centralized</b><p>BaseTest creates and closes browsers, captures failure screenshots, and records test outcomes.</p></div>
+    <div class="design-card"><b>Waits follow application state</b><p>Explicit waits check page navigation, cart counts, and checkout transitions instead of fixed sleeps.</p></div>
+    <div class="design-card"><b>Data stays outside test logic</b><p>Public demo credentials and customer values are read from a classpath properties file.</p></div>
+  </div>
+
+  <div class="stack"><b>Technology:</b> Java 25 · Selenium WebDriver 4.52 · TestNG 7.11 · Maven · WebDriverManager · Log4j · ExtentReports</div>
+  <div class="footer"><span>SauceDemo Selenium Automation · Portfolio overview</span><span>01 / 02</span></div>
+</section>
+
+<section class="page">
+  <div class="topline"><span>Coverage · Reporting · Execution</span><span class="pill">Regression suite</span></div>
+  <div class="page-header">
+    <h2>What the suite validates</h2>
+    <p>Independent browser tests cover high-value customer flows and the supporting checks that keep them reliable.</p>
+  </div>
+
+  <div class="coverage-grid">
+    <div class="coverage"><h3>Login and session</h3><p>Valid and rejected credentials, required-field errors, locked-out account behavior, password masking, logout, refresh, and direct inventory access after logout.</p></div>
+    <div class="coverage"><h3>Inventory and products</h3><p>Product names, prices and images; product detail content; return navigation; alphabetical and price sorting; responsive viewport checks.</p></div>
+    <div class="coverage"><h3>Cart behavior</h3><p>Add and remove products, badge consistency, multiple products, item name/description/price/quantity, continue shopping, and repeated add/remove actions.</p></div>
+    <div class="coverage"><h3>Checkout and orders</h3><p>Required customer fields, special and long input values, overview line items, calculated subtotal/tax/total, cancellation, successful completion, and Back Home.</p></div>
+    <div class="coverage wide"><h3>Navigation and keyboard checks</h3><p>Side menu, All Items and About links, app-state reset, browser back/forward, keyboard tab traversal, and single- and multi-item end-to-end purchase flows.</p></div>
+  </div>
+
+  <div class="operating">
+    <div class="panel">
+      <h3>Reporting and failure evidence</h3>
+      <ul>
+        <li>Log4j console and rolling-file logs under <b>target/logs/</b></li>
+        <li>Extent report at <b>target/extent-reports/</b></li>
+        <li>Automatic failure screenshots under <b>target/screenshots/</b></li>
+        <li>TestNG and Surefire XML/text reports under <b>target/surefire-reports/</b></li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>GitHub Actions</h3>
+      <p>Workflow runs on pushes and pull requests to <b>main</b>, and can be started manually.</p>
+      <p>Ubuntu runner · Temurin Java 25 · Chrome headless · Maven clean verify.</p>
+      <p>The workflow has passed; the local suite also passes with 44 executions.</p>
+    </div>
+  </div>
+
+  <div class="code"><span class="label">Run the suite</span>mvn --batch-mode --no-transfer-progress clean verify -Dbrowser=chrome -Dheadless=true<br><br><span class="label">Run visibly or choose another browser</span>mvn clean test -Dheadless=false<br>mvn clean test -Dbrowser=firefox<br>mvn clean test -Dbrowser=edge</div>
+
+  <div class="project-link"><b>Source code</b><a href="https://github.com/vinjavarapu/SeleniumTestAutomation">github.com/vinjavarapu/SeleniumTestAutomation ↗</a></div>
+  <p class="scope-note">Scope note: the 58-case PDF is the design catalogue; the current executable suite automates broad functional coverage across those areas, not every listed case. SauceDemo is a public practice site, so UI behavior may change over time.</p>
+
+  <div class="footer"><span>Java · Selenium WebDriver · TestNG · Maven · GitHub Actions</span><span>02 / 02</span></div>
+</section>
+</body>
+</html>
