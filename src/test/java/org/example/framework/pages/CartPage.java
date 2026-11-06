@@ -13,6 +13,8 @@ public class CartPage extends BasePage {
     private final By cartItemNames = By.cssSelector(".cart_item .inventory_item_name");
     private final By cartItems = By.cssSelector(".cart_item");
     private final By checkoutButton = By.id("checkout");
+    private final By continueShoppingButton = By.id("continue-shopping");
+    private final By cartBadge = By.cssSelector("[data-test='shopping-cart-badge']");
 
     public CartPage(WebDriver driver) {
         super(driver);
@@ -26,6 +28,19 @@ public class CartPage extends BasePage {
 
     public int getItemCount() {
         return driver.findElements(cartItems).size();
+    }
+
+    public int getBadgeCount() {
+        return driver.findElements(cartBadge).isEmpty() ? 0 : Integer.parseInt(readText(cartBadge));
+    }
+
+    public boolean isCheckoutEnabled() {
+        return driver.findElement(checkoutButton).isEnabled();
+    }
+
+    public void continueShopping() {
+        click(continueShoppingButton, "Continuing shopping");
+        wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory.html"));
     }
 
     public String getProductDescription(String productName) {

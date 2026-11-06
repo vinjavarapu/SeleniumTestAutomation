@@ -10,6 +10,8 @@ public class CheckoutInformationPage extends BasePage {
     private final By lastNameField = By.id("last-name");
     private final By postalCodeField = By.id("postal-code");
     private final By continueButton = By.id("continue");
+    private final By cancelButton = By.id("cancel");
+    private final By errorMessage = By.cssSelector("[data-test='error']");
 
     public CheckoutInformationPage(WebDriver driver) {
         super(driver);
@@ -26,5 +28,19 @@ public class CheckoutInformationPage extends BasePage {
     public void continueToOverview() {
         clickCheckoutControl(continueButton, "Continuing to the checkout overview");
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("checkout-step-two.html"));
+    }
+
+    public void continueWithInformation(String firstName, String lastName, String postalCode) {
+        if (firstName != null) enterText(firstNameField, firstName, "Entering checkout first name");
+        if (lastName != null) enterText(lastNameField, lastName, "Entering checkout last name");
+        if (postalCode != null) enterText(postalCodeField, postalCode, "Entering checkout postal code");
+        clickCheckoutControl(continueButton, "Continuing checkout");
+    }
+
+    public String getErrorMessage() { return readText(errorMessage); }
+
+    public void cancel() {
+        clickCheckoutControl(cancelButton, "Canceling checkout");
+        wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("cart.html"));
     }
 }

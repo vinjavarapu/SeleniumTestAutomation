@@ -12,6 +12,11 @@ public class CheckoutOverviewPage extends BasePage {
     private final By summaryContainer = By.cssSelector(".checkout_summary_container");
     private final By itemNames = By.cssSelector(".cart_item .inventory_item_name");
     private final By finishButton = By.id("finish");
+    private final By cancelButton = By.id("cancel");
+    private final By itemPrices = By.cssSelector(".cart_item .inventory_item_price");
+    private final By subtotal = By.cssSelector(".summary_subtotal_label");
+    private final By tax = By.cssSelector(".summary_tax_label");
+    private final By total = By.cssSelector(".summary_total_label");
 
     public CheckoutOverviewPage(WebDriver driver) {
         super(driver);
@@ -25,5 +30,16 @@ public class CheckoutOverviewPage extends BasePage {
 
     public void placeOrder() {
         clickCheckoutControl(finishButton, "Placing the order");
+    }
+
+    public List<String> getItemPrices() {
+        return driver.findElements(itemPrices).stream().map(WebElement::getText).toList();
+    }
+    public String getSubtotal() { return readText(subtotal); }
+    public String getTax() { return readText(tax); }
+    public String getTotal() { return readText(total); }
+    public void cancel() {
+        clickCheckoutControl(cancelButton, "Canceling from order overview");
+        wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory.html"));
     }
 }

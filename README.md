@@ -14,6 +14,8 @@ src/test/java/org/example/framework/
 src/test/java/org/example/framework/tests/
   LoginTests.java                 Valid and invalid login scenarios
   CheckoutTests.java              Login-to-order-confirmation journey
+  InventoryCartTests.java         Inventory and cart scenarios
+  CatalogueRegressionTests.java   Coverage based on the SauceDemo test catalogue
 src/test/resources/
   log4j2.xml                      Console and rolling-file logging
   testdata/saucedemo.properties   Public demo credentials and checkout data
@@ -30,3 +32,5 @@ mvn clean test
 Headless mode defaults to `true`. To see the browser locally, run `mvn clean test -Dheadless=false`. Choose another supported browser with `-Dbrowser=firefox` or `-Dbrowser=edge`. The default explicit wait is 10 seconds and can be changed with `-DexplicitWaitSeconds=15`.
 
 Logs appear in the console and in `target/logs/automation.log`. Maven's `target/` directory is generated output and is ignored by Git.
+
+The test catalogue is stored in `SauceDemo_Selenium_Java_Test_Cases.pdf`. Regression coverage includes login validation, inventory and sorting, product details, cart contents and removal, checkout validation and totals, order confirmation, navigation, session behavior, responsive inventory, keyboard traversal, and multi-item checkout. Some catalogue expectations describe demo behavior that can change; verify them against the live app before using them as release acceptance criteria.

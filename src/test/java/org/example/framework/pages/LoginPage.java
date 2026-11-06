@@ -45,4 +45,12 @@ public class LoginPage extends BasePage {
     public String getErrorMessage() {
         return readText(errorMessage);
     }
+
+    public boolean isLoginFormVisible() {
+        return isVisible(usernameField) && isVisible(passwordField) && isVisible(loginButton);
+    }
+
+    public String getPasswordInputType() {
+        return visibleElement(passwordField).getAttribute("type");
+    }
 }

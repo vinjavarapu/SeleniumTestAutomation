@@ -7,6 +7,7 @@ import org.openqa.selenium.WebDriver;
 /** Page object for the order confirmation screen. */
 public class CheckoutCompletePage extends BasePage {
     private final By confirmationMessage = By.cssSelector("[data-test='complete-header']");
+    private final By backHomeButton = By.id("back-to-products");
 
     public CheckoutCompletePage(WebDriver driver) {
         super(driver);
@@ -15,5 +16,10 @@ public class CheckoutCompletePage extends BasePage {
 
     public String getConfirmationMessage() {
         return readText(confirmationMessage);
+    }
+
+    public void backHome() {
+        click(backHomeButton, "Returning home after order completion");
+        wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory.html"));
     }
 }
