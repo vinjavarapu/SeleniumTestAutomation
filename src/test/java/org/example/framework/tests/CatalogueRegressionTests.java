@@ -276,6 +276,7 @@ public class CatalogueRegressionTests extends BaseTest {
             getDriver().getWindowHandles().stream().filter(handle -> !handle.equals(originalWindow))
                     .findFirst().ifPresent(handle -> getDriver().switchTo().window(handle));
         }
+        getWait().until(driver -> driver.getCurrentUrl().contains("saucelabs.com"));
         Assert.assertTrue(getDriver().getCurrentUrl().contains("saucelabs.com"));
     }
 

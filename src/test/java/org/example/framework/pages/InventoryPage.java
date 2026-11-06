@@ -58,7 +58,9 @@ public class InventoryPage extends BasePage {
 
     public void removeProductFromInventory(String productName) {
         String id = productId(productName);
+        int previousCount = getCartItemCount();
         click(By.cssSelector("[data-test='remove-" + id + "']"), "Removing product from inventory: " + productName);
+        wait.until(driver -> getCartItemCount() == previousCount - 1);
     }
 
     public void openProductDetails(String productName) {
@@ -68,18 +70,25 @@ public class InventoryPage extends BasePage {
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory-item.html"));
     }
 
-    public void openMenu() { click(menuButton, "Opening the side menu"); }
-    public void closeMenu() { click(closeMenuButton, "Closing the side menu"); }
-    public boolean isMenuVisible() {
-        return driver.findElements(closeMenuButton).stream().anyMatch(WebElement::isDisplayed);
+    public void openMenu() {
+        click(menuButton, "Opening the side menu");
     }
-    public void logout() { click(logoutLink, "Logging out"); }
-    public void resetAppState() { click(resetLink, "Resetting application state"); }
+    public void closeMenu() {
+        click(closeMenuButton, "Closing the side menu");
+    }
+    public void logout() {
+        click(logoutLink, "Logging out");
+        wait.until(driver -> !driver.getCurrentUrl().contains("inventory.html"));
+    }
+    public void resetAppState() {
+        click(resetLink, "Resetting application state");
+        wait.until(driver -> getCartItemCount() == 0);
+    }
     public void clickAllItems() {
         click(allItemsLink, "Selecting All Items");
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory.html"));
     }
-    public void clickAbout() { click(aboutLink, "Opening Sauce Labs About page"); }
+    public void clickAbout() { clickCheckoutControl(aboutLink, "Opening Sauce Labs About page"); }
 
     public boolean hasRemoveButton(String productName) {
         return driver.findElements(By.cssSelector("[data-test='remove-" + productId(productName) + "']")).size() > 0;
@@ -92,7 +101,9 @@ public class InventoryPage extends BasePage {
     public void addProductToCart(String productName) {
         String productId = productId(productName);
         By addButton = By.cssSelector("[data-test='add-to-cart-" + productId + "']");
+        int previousCount = getCartItemCount();
         click(addButton, "Adding product to cart: " + productName);
+        wait.until(driver -> getCartItemCount() == previousCount + 1);
     }
 
     public int getCartItemCount() {

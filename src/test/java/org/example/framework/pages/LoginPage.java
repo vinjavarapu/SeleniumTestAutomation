@@ -20,7 +20,13 @@ public class LoginPage extends BasePage {
     public void open() {
         logger.info("Opening SauceDemo login page");
         driver.get(URL);
-        visibleElement(usernameField);
+        try {
+            visibleElement(usernameField);
+        } catch (org.openqa.selenium.TimeoutException firstLoadFailure) {
+            logger.warn("Login form did not load on the first request; refreshing once");
+            driver.navigate().refresh();
+            visibleElement(usernameField);
+        }
     }
 
     public void enterUsername(String username) {

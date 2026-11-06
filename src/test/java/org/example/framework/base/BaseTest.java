@@ -99,7 +99,12 @@ public abstract class BaseTest {
             case "chrome" -> {
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions options = new ChromeOptions();
-                if (headless) options.addArguments("--headless=new", "--window-size=1920,1080");
+                if (headless) {
+                    options.addArguments("--headless=new", "--window-size=1920,1080");
+                    if (System.getProperty("os.name", "").toLowerCase().contains("linux")) {
+                        options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
+                    }
+                }
                 yield new org.openqa.selenium.chrome.ChromeDriver(options);
             }
             case "firefox" -> {

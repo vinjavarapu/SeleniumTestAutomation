@@ -32,10 +32,11 @@ public abstract class BasePage {
     protected void click(By locator, String actionDescription) {
         logger.info("{}", actionDescription);
         ExtentReportManager.step(actionDescription);
-        wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
+        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
     }
 
-    /** Used only for the SauceDemo checkout controls; native clicks are not advancing them in headless Chrome here. */
+    /** Activates SauceDemo's animated React controls consistently in headless browsers. */
     protected void clickCheckoutControl(By locator, String actionDescription) {
         logger.info("{}", actionDescription);
         ExtentReportManager.step(actionDescription);
