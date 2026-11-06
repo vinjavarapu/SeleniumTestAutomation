@@ -3,12 +3,15 @@ package org.example.framework.pages;
 import org.example.framework.base.BasePage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import java.util.List;
 
 /** Page object for the inventory screen displayed after a successful login. */
 public class InventoryPage extends BasePage {
     private final By inventoryContainer = By.cssSelector("[data-test='inventory-container']");
     private final By cartBadge = By.cssSelector("[data-test='shopping-cart-badge']");
     private final By cartLink = By.cssSelector("[data-test='shopping-cart-link']");
+    private final By productNames = By.cssSelector(".inventory_item_name");
 
     public InventoryPage(WebDriver driver) {
         super(driver);
@@ -16,6 +19,14 @@ public class InventoryPage extends BasePage {
 
     public boolean isLoaded() {
         return isVisible(inventoryContainer);
+    }
+
+    public List<String> getProductNames() {
+        return driver.findElements(productNames).stream().map(WebElement::getText).toList();
+    }
+
+    public boolean containsProduct(String productName) {
+        return getProductNames().contains(productName);
     }
 
     public void addProductToCart(String productName) {
@@ -32,6 +43,7 @@ public class InventoryPage extends BasePage {
     }
 
     public void openCart() {
-        click(cartLink, "Opening the shopping cart");
+        clickCheckoutControl(cartLink, "Opening the shopping cart");
+        wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("cart.html"));
     }
 }

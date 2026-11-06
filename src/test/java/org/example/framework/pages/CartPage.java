@@ -11,6 +11,7 @@ import org.openqa.selenium.WebElement;
 public class CartPage extends BasePage {
     private final By cartList = By.cssSelector(".cart_list");
     private final By cartItemNames = By.cssSelector(".cart_item .inventory_item_name");
+    private final By cartItems = By.cssSelector(".cart_item");
     private final By checkoutButton = By.id("checkout");
 
     public CartPage(WebDriver driver) {
@@ -21,6 +22,36 @@ public class CartPage extends BasePage {
     public boolean containsProduct(String productName) {
         List<WebElement> names = driver.findElements(cartItemNames);
         return names.stream().anyMatch(element -> element.getText().equals(productName));
+    }
+
+    public int getItemCount() {
+        return driver.findElements(cartItems).size();
+    }
+
+    public String getProductDescription(String productName) {
+        return itemFor(productName).findElement(By.cssSelector(".inventory_item_desc")).getText();
+    }
+
+    public String getProductPrice(String productName) {
+        return itemFor(productName).findElement(By.cssSelector(".inventory_item_price")).getText();
+    }
+
+    public String getProductQuantity(String productName) {
+        return itemFor(productName).findElement(By.cssSelector(".cart_quantity")).getText();
+    }
+
+    public void removeProduct(String productName) {
+        String productId = productName.trim().toLowerCase().replaceAll("[^a-z0-9]+", "-");
+        int previousCount = getItemCount();
+        By removeButton = By.cssSelector("[data-test='remove-" + productId + "']");
+        clickCheckoutControl(removeButton, "Removing product from cart: " + productName);
+        wait.until(driver -> getItemCount() == previousCount - 1);
+    }
+
+    private WebElement itemFor(String productName) {
+        return driver.findElements(cartItems).stream()
+                .filter(item -> item.findElement(By.cssSelector(".inventory_item_name")).getText().equals(productName))
+                .findFirst().orElseThrow(() -> new AssertionError("Product not found in cart: " + productName));
     }
 
     public void clickCheckout() {
