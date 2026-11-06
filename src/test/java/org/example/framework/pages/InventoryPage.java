@@ -25,7 +25,12 @@ public class InventoryPage extends BasePage {
     }
 
     public boolean isLoaded() {
-        return driver.findElements(inventoryContainer).stream().anyMatch(WebElement::isDisplayed);
+        try {
+            wait.until(d -> d.findElements(productNames).size() > 0);
+            return driver.findElements(inventoryContainer).stream().anyMatch(WebElement::isDisplayed);
+        } catch (org.openqa.selenium.TimeoutException e) {
+            return false;
+        }
     }
 
     public List<String> getProductNames() {
