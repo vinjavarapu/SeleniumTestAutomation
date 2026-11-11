@@ -12,7 +12,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class CheckoutTests extends BaseTest {
-    @Test(groups = "regression", description = "A customer can purchase a product from login through order confirmation")
+    @Test(groups = "regression", description = "SD-002, SD-016, SD-024, SD-026, SD-031..032, SD-040, SD-044: Full checkout happy path")
     public void customerCanCompleteCheckout() {
         String productName = TestDataReader.get("product.name");
         logger.info("Starting end-to-end checkout for product: {}", productName);

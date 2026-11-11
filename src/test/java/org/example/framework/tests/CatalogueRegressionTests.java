@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.example.framework.base.BaseTest;
+import org.example.framework.config.FrameworkConfig;
 import org.example.framework.pages.CartPage;
 import org.example.framework.pages.CheckoutCompletePage;
 import org.example.framework.pages.CheckoutInformationPage;
@@ -98,12 +99,13 @@ public class CatalogueRegressionTests extends BaseTest {
         InventoryPage inventory = login();
         Assert.assertEquals(inventory.getProductNames().size(), 6);
         Assert.assertEquals(inventory.getProductPrices().size(), 6);
+        Assert.assertTrue(inventory.productActionButtonsAreVisible(), "Each product should have a visible cart control");
         Assert.assertEquals(inventory.getProductImageSources().size(), 6);
         Assert.assertTrue(inventory.getProductImagesLoaded().stream().allMatch(Boolean::booleanValue),
                 "All inventory images should load");
     }
 
-    @Test(description = "SD-015..017: Product detail content matches inventory and supports back navigation")
+    @Test(description = "SD-014..015, SD-056: Product details match inventory, image loads, and back navigation works")
     public void productDetailsAndBackNavigationWork() {
         InventoryPage inventory = login();
         String expectedName = TestDataReader.get("product.name");
@@ -113,16 +115,17 @@ public class CatalogueRegressionTests extends BaseTest {
         Assert.assertFalse(details.getDescription().isBlank());
         Assert.assertEquals(details.getPrice(), TestDataReader.get("product.price"));
         Assert.assertTrue(details.isImageVisible());
+        Assert.assertTrue(details.isImageLoaded(), "Product detail image should load without a broken-image placeholder");
         details.backToProducts();
         Assert.assertTrue(new InventoryPage(getDriver()).containsProduct(expectedName));
     }
 
     @DataProvider(name = "sortOrders")
     public Object[][] sortOrders() {
-        return new Object[][] {{"az", true, false}, {"za", true, true}, {"lohi", false, false}, {" hilo", false, true}};
+        return new Object[][] {{"az", true, false}, {"za", true, true}, {"lohi", false, false}, {"hilo", false, true}};
     }
 
-    @Test(dataProvider = "sortOrders", description = "SD-022..024: Inventory sorting orders names or prices correctly")
+    @Test(dataProvider = "sortOrders", description = "SD-019..022: Inventory sorting orders names or prices correctly")
     public void inventorySortingMatchesExpectedOrder(String sort, boolean names, boolean descending) {
         InventoryPage inventory = login();
         String option = sort.trim();
@@ -142,7 +145,7 @@ public class CatalogueRegressionTests extends BaseTest {
         }
     }
 
-    @Test(description = "SD-021: Removing from inventory updates the cart badge")
+    @Test(description = "SD-018: Removing from inventory updates the cart badge")
     public void removeFromInventoryUpdatesBadge() {
         InventoryPage inventory = login();
         String name = TestDataReader.get("product.name");
@@ -158,9 +161,10 @@ public class CatalogueRegressionTests extends BaseTest {
         login().openCart();
         CartPage cart = new CartPage(getDriver());
         Assert.assertEquals(cart.getItemCount(), 0);
+        Assert.assertFalse(cart.isCheckoutEnabled(), "Checkout should not proceed from an empty cart");
     }
 
-    @Test(description = "SD-026..030: Cart retains multiple products, correct details, and supports continue shopping")
+    @Test(description = "SD-016..017, SD-026..029: Add/remove controls, cart details, multiple items, and continue shopping")
     public void multipleCartItemsAndNavigationStayConsistent() {
         InventoryPage inventory = login();
         List<String> selected = List.of("Sauce Labs Backpack", "Sauce Labs Bike Light", "Sauce Labs Bolt T-Shirt");
@@ -180,6 +184,46 @@ public class CatalogueRegressionTests extends BaseTest {
         cart.continueShopping();
         InventoryPage returned = new InventoryPage(getDriver());
         Assert.assertEquals(returned.getCartItemCount(), selected.size());
+    }
+
+    @Test(description = "SD-023: Sorting after adding a product preserves its cart state")
+    public void sortingAfterAddPreservesCartContents() {
+        InventoryPage inventory = login();
+        String productName = TestDataReader.get("product.name");
+        inventory.addProductToCart(productName);
+
+        inventory.sortBy("za");
+        List<String> actualNames = inventory.getProductNames();
+        List<String> expectedNames = new ArrayList<>(actualNames);
+        expectedNames.sort(String.CASE_INSENSITIVE_ORDER.reversed());
+        Assert.assertEquals(actualNames, expectedNames, "Name Z to A sort should be applied");
+        Assert.assertEquals(inventory.getCartItemCount(), 1);
+        Assert.assertTrue(inventory.hasRemoveButton(productName));
+
+        inventory.openCart();
+        CartPage cart = new CartPage(getDriver());
+        Assert.assertTrue(cart.containsProduct(productName));
+        Assert.assertEquals(cart.getBadgeCount(), 1);
+    }
+
+    @Test(description = "SD-030: Cart state remains consistent through product details and cart navigation")
+    public void cartStatePersistsAcrossProductNavigation() {
+        InventoryPage inventory = login();
+        String productName = TestDataReader.get("product.name");
+        inventory.addProductToCart(productName);
+        inventory.openProductDetails(productName);
+
+        ProductDetailsPage details = new ProductDetailsPage(getDriver());
+        Assert.assertEquals(details.getName(), productName);
+        details.backToProducts();
+
+        InventoryPage returned = new InventoryPage(getDriver());
+        Assert.assertEquals(returned.getCartItemCount(), 1);
+        Assert.assertTrue(returned.hasRemoveButton(productName));
+        returned.openCart();
+        CartPage cart = new CartPage(getDriver());
+        Assert.assertTrue(cart.containsProduct(productName));
+        Assert.assertEquals(cart.getBadgeCount(), 1);
     }
 
     @Test(description = "SD-027: Removing a cart item updates item list and badge")
@@ -223,12 +267,17 @@ public class CatalogueRegressionTests extends BaseTest {
         new CartPage(getDriver()).clickCheckout();
         new CheckoutInformationPage(getDriver()).cancel();
         Assert.assertTrue(getDriver().getCurrentUrl().contains("cart.html"));
+        Assert.assertTrue(new CartPage(getDriver()).containsProduct(TestDataReader.get("product.name")),
+                "Canceling checkout should preserve the cart item");
     }
 
     @Test(description = "SD-040..042: Overview preserves line items and displays consistent calculated totals")
     public void overviewLineItemsAndTotalsAreConsistent() {
         CheckoutOverviewPage overview = checkoutWithOneProduct();
         Assert.assertTrue(overview.containsProduct(TestDataReader.get("product.name")));
+        Assert.assertEquals(overview.getItemNames(), List.of(TestDataReader.get("product.name")));
+        Assert.assertEquals(overview.getItemPrices(), List.of(TestDataReader.get("product.price")));
+        Assert.assertEquals(overview.getItemQuantities(), List.of("1"));
         BigDecimal lineItemSum = overview.getItemPrices().stream().map(CatalogueRegressionTests::money)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal subtotal = money(overview.getSubtotal());
@@ -259,7 +308,9 @@ public class CatalogueRegressionTests extends BaseTest {
     public void menuOpensClosesAndAllItemsNavigatesToInventory() {
         InventoryPage inventory = login();
         inventory.openMenu();
+        Assert.assertTrue(inventory.isMenuOpen(), "The side menu should be visible after opening it");
         inventory.closeMenu();
+        Assert.assertFalse(inventory.isMenuOpen(), "The side menu should be hidden after closing it");
         inventory.openMenu();
         inventory.clickAllItems();
         Assert.assertTrue(new InventoryPage(getDriver()).isLoaded());
@@ -289,6 +340,7 @@ public class CatalogueRegressionTests extends BaseTest {
         inventory.openMenu();
         inventory.resetAppState();
         Assert.assertEquals(inventory.getCartItemCount(), 0);
+        Assert.assertFalse(inventory.hasRemoveButton(TestDataReader.get("product.name")));
     }
 
     @Test(description = "SD-050..051: Refresh retains session and inventory URL is guarded after logout")
@@ -299,9 +351,9 @@ public class CatalogueRegressionTests extends BaseTest {
         inventory = new InventoryPage(getDriver());
         inventory.openMenu();
         inventory.logout();
-        getDriver().get("https://www.saucedemo.com/inventory.html");
+        getDriver().get(FrameworkConfig.baseUrl() + "inventory.html");
         Assert.assertTrue(getDriver().getCurrentUrl().contains("saucedemo.com"));
-        Assert.assertFalse(new InventoryPage(getDriver()).isLoaded());
+        Assert.assertTrue(new LoginPage(getDriver()).isLoginFormVisible());
     }
 
     @Test(description = "SD-052: Browser back and forward retain product navigation")
@@ -314,7 +366,42 @@ public class CatalogueRegressionTests extends BaseTest {
         Assert.assertTrue(getDriver().getCurrentUrl().contains("inventory-item.html"));
     }
 
-    @Test(description = "SD-055: Keyboard tab navigation moves through login controls")
+    @Test(description = "SD-054: Keyboard navigation operates login and shopping controls")
+    public void keyboardNavigationOperatesLoginAndShoppingFlow() {
+        LoginPage page = new LoginPage(getDriver());
+        page.open();
+        WebElement username = getDriver().findElement(By.id("user-name"));
+        WebElement password = getDriver().findElement(By.id("password"));
+        username.sendKeys(TestDataReader.get("valid.username"), Keys.TAB);
+        Assert.assertEquals(activeElementId(), "password", "Tab should move from username to password");
+        password.sendKeys(TestDataReader.get("valid.password"), Keys.ENTER);
+
+        InventoryPage inventory = new InventoryPage(getDriver());
+        Assert.assertTrue(inventory.isLoaded(), "Enter should submit the login form");
+
+        String productName = TestDataReader.get("product.name");
+        String addButtonTestId = "add-to-cart-" + productName.toLowerCase().replaceAll("[^a-z0-9]+", "-");
+        boolean addButtonFocused = false;
+        for (int tab = 0; tab < 50; tab++) {
+            getDriver().switchTo().activeElement().sendKeys(Keys.TAB);
+            if (Boolean.TRUE.equals(((JavascriptExecutor) getDriver()).executeScript(
+                    "return document.activeElement.getAttribute('data-test') === arguments[0]", addButtonTestId))) {
+                addButtonFocused = true;
+                break;
+            }
+        }
+        Assert.assertTrue(addButtonFocused, "Tab order should reach the product Add to cart control");
+        getDriver().switchTo().activeElement().sendKeys(Keys.SPACE);
+        Assert.assertEquals(inventory.getCartItemCount(), 1, "Space should activate the focused Add to cart button");
+
+        WebElement cartLink = getDriver().findElement(By.cssSelector("[data-test='shopping-cart-link']"));
+        ((JavascriptExecutor) getDriver()).executeScript("arguments[0].focus()", cartLink);
+        cartLink.sendKeys(Keys.ENTER);
+        CartPage cart = new CartPage(getDriver());
+        Assert.assertTrue(cart.containsProduct(productName), "Enter should open the cart from its focused link");
+    }
+
+    @Test(description = "SD-054: Login Tab order moves through the login controls")
     public void keyboardNavigationMovesThroughLoginForm() {
         LoginPage page = new LoginPage(getDriver());
         page.open();
@@ -341,6 +428,8 @@ public class CatalogueRegressionTests extends BaseTest {
         info.enterCustomerInformation(longValue, longValue, "1234567890".repeat(10));
         info.continueToOverview();
         Assert.assertTrue(getDriver().getCurrentUrl().contains("checkout-step-two.html"));
+        Assert.assertTrue(new CheckoutOverviewPage(getDriver()).containsProduct(TestDataReader.get("product.name")),
+                "Checkout should remain usable after accepting long customer values");
     }
 
     @Test(description = "SD-058: Multi-item checkout preserves all selected products and totals")
@@ -366,13 +455,19 @@ public class CatalogueRegressionTests extends BaseTest {
         Assert.assertEquals(new CheckoutCompletePage(getDriver()).getConfirmationMessage(), "Thank you for your order!");
     }
 
-    @Test(description = "SD-053..054: Product cards remain usable at a narrow viewport")
+    @Test(description = "SD-053: Inventory cards and controls remain usable at desktop and narrow viewports")
     public void narrowViewportKeepsInventoryUsable() {
         InventoryPage inventory = login();
+        getDriver().manage().window().setSize(new Dimension(1280, 800));
+        Assert.assertTrue(inventory.productCardsFitViewport(), "Desktop product cards should fit the viewport");
+        Assert.assertTrue(inventory.productActionButtonsAreVisible(), "Desktop product controls should be visible");
+
         getDriver().manage().window().setSize(new Dimension(390, 844));
         Assert.assertTrue(inventory.isLoaded());
         Assert.assertEquals(inventory.getProductNames().size(), 6);
         Assert.assertEquals(inventory.getCartItemCount(), 0);
+        Assert.assertTrue(inventory.productCardsFitViewport(), "Mobile product cards should not overflow horizontally");
+        Assert.assertTrue(inventory.productActionButtonsAreVisible(), "Mobile product controls should remain visible");
     }
 
     @Test(description = "SD-057: Repeated add/remove actions keep badge and button state synchronized")
@@ -423,13 +518,12 @@ public class CatalogueRegressionTests extends BaseTest {
         Assert.assertEquals(focusedPasswordId, "password", "Tab should focus password field");
 
         boolean passwordHasFocusStyle = (boolean) ((JavascriptExecutor) getDriver())
-                .executeScript("const el = document.activeElement; "
-                        + "return window.getComputedStyle(el).outline !== 'none' "
-                        + "|| window.getComputedStyle(el).boxShadow !== 'none' "
-                        + "|| el.classList.toString().includes('focus') "
-                        + "|| el.classList.toString().includes('active')");
-        Assert.assertTrue(passwordHasFocusStyle || focusedPasswordId.equals("password"),
-                "Focused password field should have visible focus indicator");
+                .executeScript("const style = window.getComputedStyle(document.activeElement); "
+                        + "return (style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0) "
+                        + "|| style.boxShadow !== 'none' "
+                        + "|| document.activeElement.classList.toString().includes('focus') "
+                        + "|| document.activeElement.classList.toString().includes('active')");
+        Assert.assertTrue(passwordHasFocusStyle, "Focused password field should have visible focus indicator");
 
         passwordField.sendKeys(Keys.TAB);
         String focusedLoginId = (String) ((JavascriptExecutor) getDriver())
@@ -439,5 +533,9 @@ public class CatalogueRegressionTests extends BaseTest {
 
     private static BigDecimal money(String text) {
         return new BigDecimal(text.replaceAll("[^0-9.]", "")).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private String activeElementId() {
+        return (String) ((JavascriptExecutor) getDriver()).executeScript("return document.activeElement.id");
     }
 }

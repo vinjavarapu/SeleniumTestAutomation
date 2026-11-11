@@ -28,12 +28,20 @@ public class CheckoutOverviewPage extends BasePage {
         return names.stream().anyMatch(element -> element.getText().equals(productName));
     }
 
+    public List<String> getItemNames() {
+        return driver.findElements(itemNames).stream().map(WebElement::getText).toList();
+    }
+
     public void placeOrder() {
         click(finishButton, "Placing the order");
     }
 
     public List<String> getItemPrices() {
         return driver.findElements(itemPrices).stream().map(WebElement::getText).toList();
+    }
+    public List<String> getItemQuantities() {
+        return driver.findElements(By.cssSelector(".cart_item .cart_quantity")).stream()
+                .map(WebElement::getText).toList();
     }
     public String getSubtotal() { return readText(subtotal); }
     public String getTax() { return readText(tax); }

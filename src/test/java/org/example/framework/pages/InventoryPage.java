@@ -61,6 +61,25 @@ public class InventoryPage extends BasePage {
                         && !"0".equals(image.getDomProperty("naturalWidth"))).toList();
     }
 
+    public boolean productCardsFitViewport() {
+        return Boolean.TRUE.equals(((org.openqa.selenium.JavascriptExecutor) driver).executeScript(
+                "const width = document.documentElement.clientWidth; "
+                        + "const cards = [...document.querySelectorAll('.inventory_item')]; "
+                        + "return cards.length > 0 && document.documentElement.scrollWidth <= width "
+                        + "&& cards.every(card => { const r = card.getBoundingClientRect(); "
+                + "return r.left >= 0 && r.right <= width; }) "
+                + "&& cards.every((card, i) => cards.slice(i + 1).every(other => { "
+                + "const a = card.getBoundingClientRect(), b = other.getBoundingClientRect(); "
+                + "return a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top; }));"));
+    }
+
+    public boolean productActionButtonsAreVisible() {
+        List<WebElement> buttons = driver.findElements(By.cssSelector(
+                ".inventory_item button[data-test^='add-to-cart-'], "
+                        + ".inventory_item button[data-test^='remove-']"));
+        return buttons.size() == getProductNames().size() && buttons.stream().allMatch(WebElement::isDisplayed);
+    }
+
     public void sortBy(String optionValue) {
         new org.openqa.selenium.support.ui.Select(visibleElement(sortSelect)).selectByValue(optionValue);
     }
@@ -83,6 +102,9 @@ public class InventoryPage extends BasePage {
 
     public void openMenu() {
         click(menuButton, "Opening the side menu");
+    }
+    public boolean isMenuOpen() {
+        return "false".equals(driver.findElement(By.cssSelector(".bm-menu-wrap")).getAttribute("aria-hidden"));
     }
     public void closeMenu() {
         click(closeMenuButton, "Closing the side menu");
