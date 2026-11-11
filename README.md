@@ -107,4 +107,4 @@ Run a specific group:
 mvn test -Dgroups=smoke
 ```
 
-The test catalogue is in `SauceDemo_Selenium_Java_Test_Cases.pdf`. Regression coverage includes login validation, inventory and sorting, product details, cart contents and removal, checkout validation and totals, order confirmation, navigation, session behavior, responsive inventory, keyboard traversal, and multi-item checkout.
+The test catalogue is in [`SauceDemo_Selenium_Java_Test_Cases.pdf`](OnlineHelp/SauceDemo_Selenium_Java_Test_Cases.pdf). Regression coverage includes login validation, inventory and sorting, product details, cart contents and removal, checkout validation and totals, order confirmation, navigation, session behavior, responsive inventory, keyboard traversal, and multi-item checkout.
