@@ -2,6 +2,7 @@ package org.example.framework.config;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Properties;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Properties;
  * one environment configuration but get independent browser sessions.
  */
 public final class FrameworkConfig {
-    private static final String ENV = System.getProperty("env", "qa").trim().toLowerCase();
+    private static final String ENV = environmentFromSystemProperty();
     private static final String CONFIG_FILE = String.format("/config/%s.properties", ENV);
     private static final Properties DEFAULTS;
     private static final Properties ENV_CONFIG;
@@ -21,6 +22,14 @@ public final class FrameworkConfig {
     }
 
     private FrameworkConfig() {
+    }
+
+    private static String environmentFromSystemProperty() {
+        String environment = System.getProperty("env");
+        if (environment == null || environment.isBlank()) {
+            return "qa";
+        }
+        return environment.trim().toLowerCase(Locale.ROOT);
     }
 
     private static Properties loadResource(String resourcePath) {
