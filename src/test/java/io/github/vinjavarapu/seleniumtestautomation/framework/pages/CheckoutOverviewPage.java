@@ -3,6 +3,7 @@ package io.github.vinjavarapu.seleniumtestautomation.framework.pages;
 import java.util.List;
 
 import io.github.vinjavarapu.seleniumtestautomation.framework.base.BasePage;
+import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -21,6 +22,7 @@ public class CheckoutOverviewPage extends BasePage {
     public CheckoutOverviewPage(WebDriver driver) {
         super(driver);
         visibleElement(summaryContainer);
+        TestStepReporter.record("Checkout order overview is displayed");
     }
 
     public boolean containsProduct(String productName) {

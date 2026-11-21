@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import io.github.vinjavarapu.seleniumtestautomation.framework.config.FrameworkConfig;
 import io.github.vinjavarapu.seleniumtestautomation.framework.driver.DriverFactory;
 import io.github.vinjavarapu.seleniumtestautomation.framework.driver.DriverManager;
+import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import io.github.vinjavarapu.seleniumtestautomation.framework.utils.WaitHelper;
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.AfterMethod;
@@ -65,6 +66,26 @@ public abstract class BaseTest {
 
     protected WaitHelper getWait() {
         return new WaitHelper(getDriver());
+    }
+
+    protected void navigateBack() {
+        TestStepReporter.record("Navigating back in browser history");
+        getDriver().navigate().back();
+    }
+
+    protected void navigateForward() {
+        TestStepReporter.record("Navigating forward in browser history");
+        getDriver().navigate().forward();
+    }
+
+    protected void refreshPage() {
+        TestStepReporter.record("Refreshing the current page");
+        getDriver().navigate().refresh();
+    }
+
+    protected void openUrl(String url, String description) {
+        TestStepReporter.record(description);
+        getDriver().get(url);
     }
 
 }

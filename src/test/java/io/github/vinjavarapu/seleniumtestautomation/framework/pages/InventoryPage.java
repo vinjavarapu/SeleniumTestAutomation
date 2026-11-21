@@ -1,6 +1,7 @@
 package io.github.vinjavarapu.seleniumtestautomation.framework.pages;
 
 import io.github.vinjavarapu.seleniumtestautomation.framework.base.BasePage;
+import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -83,6 +84,7 @@ public class InventoryPage extends BasePage {
     }
 
     public void sortBy(String optionValue) {
+        TestStepReporter.record("Sorting inventory using option: " + optionValue);
         new org.openqa.selenium.support.ui.Select(visibleElement(sortSelect)).selectByValue(optionValue);
     }
 
@@ -94,6 +96,7 @@ public class InventoryPage extends BasePage {
     }
 
     public void openProductDetails(String productName) {
+        TestStepReporter.record("Opening product details for: " + productName);
         wait.until(d -> d.findElements(productNames).stream()
                 .anyMatch(link -> link.getText().equals(productName)));
         List<WebElement> links = driver.findElements(productNames);

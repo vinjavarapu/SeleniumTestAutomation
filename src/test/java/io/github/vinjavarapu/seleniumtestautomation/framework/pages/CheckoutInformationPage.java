@@ -1,6 +1,7 @@
 package io.github.vinjavarapu.seleniumtestautomation.framework.pages;
 
 import io.github.vinjavarapu.seleniumtestautomation.framework.base.BasePage;
+import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -17,6 +18,7 @@ public class CheckoutInformationPage extends BasePage {
         super(driver);
         logger.info("Checkout information page state: url={}, title={}", driver.getCurrentUrl(), driver.getTitle());
         visibleElement(firstNameField);
+        TestStepReporter.record("Checkout information page is displayed");
     }
 
     public void enterCustomerInformation(String firstName, String lastName, String postalCode) {
@@ -37,7 +39,10 @@ public class CheckoutInformationPage extends BasePage {
         click(continueButton, "Continuing checkout");
     }
 
-    public String getErrorMessage() { return readText(errorMessage); }
+    public String getErrorMessage() {
+        TestStepReporter.record("Reading checkout validation message");
+        return readText(errorMessage);
+    }
 
     public void cancel() {
         click(cancelButton, "Canceling checkout");

@@ -1,6 +1,7 @@
 package io.github.vinjavarapu.seleniumtestautomation.framework.tests;
 
 import io.github.vinjavarapu.seleniumtestautomation.framework.base.BaseTest;
+import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.InventoryPage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.LoginPage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.utils.TestDataReader;
@@ -17,7 +18,7 @@ public class LoginTests extends BaseTest {
                 TestDataReader.get("valid.username"),
                 TestDataReader.get("valid.password"));
 
-        Assert.assertTrue(new InventoryPage(getDriver()).isLoaded(),
+        TestStepReporter.assertTrue(new InventoryPage(getDriver()).isLoaded(),
                 "Expected the inventory page after a successful login");
         logger.info("Valid-login test passed");
     }
@@ -31,7 +32,7 @@ public class LoginTests extends BaseTest {
                 TestDataReader.get("invalid.username"),
                 TestDataReader.get("invalid.password"));
 
-        Assert.assertTrue(loginPage.getErrorMessage().contains("Username and password do not match"),
+        TestStepReporter.assertTrue(loginPage.getErrorMessage().contains("Username and password do not match"),
                 "Expected SauceDemo to show a login error for invalid credentials");
         logger.info("Invalid-login test passed");
     }

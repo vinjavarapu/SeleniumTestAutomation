@@ -1,6 +1,7 @@
 package io.github.vinjavarapu.seleniumtestautomation.framework.pages;
 
 import io.github.vinjavarapu.seleniumtestautomation.framework.base.BasePage;
+import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -12,6 +13,7 @@ public class CheckoutCompletePage extends BasePage {
     public CheckoutCompletePage(WebDriver driver) {
         super(driver);
         visibleElement(confirmationMessage);
+        TestStepReporter.record("Order confirmation page is displayed");
     }
 
     public String getConfirmationMessage() {

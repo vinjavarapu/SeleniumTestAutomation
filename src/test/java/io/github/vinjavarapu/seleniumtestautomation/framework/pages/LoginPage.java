@@ -2,6 +2,7 @@ package io.github.vinjavarapu.seleniumtestautomation.framework.pages;
 
 import io.github.vinjavarapu.seleniumtestautomation.framework.base.BasePage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.config.FrameworkConfig;
+import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -18,11 +19,13 @@ public class LoginPage extends BasePage {
 
     public void open() {
         logger.info("Opening login page");
+        TestStepReporter.record("Opening the SauceDemo login page");
         driver.get(FrameworkConfig.baseUrl());
         try {
             visibleElement(usernameField);
         } catch (org.openqa.selenium.TimeoutException firstLoadFailure) {
             logger.warn("Login form did not load on the first request; refreshing once");
+            TestStepReporter.record("Refreshing the login page after the form did not load");
             driver.navigate().refresh();
             visibleElement(usernameField);
         }
@@ -48,6 +51,7 @@ public class LoginPage extends BasePage {
     }
 
     public String getErrorMessage() {
+        TestStepReporter.record("Reading the login validation message");
         return readText(errorMessage);
     }
 

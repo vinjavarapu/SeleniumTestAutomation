@@ -1,6 +1,7 @@
 package io.github.vinjavarapu.seleniumtestautomation.framework.tests;
 
 import io.github.vinjavarapu.seleniumtestautomation.framework.base.BaseTest;
+import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.CartPage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.InventoryPage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.LoginPage;
@@ -15,15 +16,15 @@ public class InventoryCartTests extends BaseTest {
         loginPage.open();
         loginPage.login(TestDataReader.get("valid.username"), TestDataReader.get("valid.password"));
         InventoryPage inventoryPage = new InventoryPage(getDriver());
-        Assert.assertTrue(inventoryPage.isLoaded(), "Expected the inventory page after login");
+        TestStepReporter.assertTrue(inventoryPage.isLoaded(), "Expected the inventory page after login");
         return inventoryPage;
     }
 
     @Test(groups = "regression", description = "Inventory displays products including the configured product")
     public void inventoryProductsAreDisplayed() {
         InventoryPage inventoryPage = loginToInventory();
-        Assert.assertEquals(inventoryPage.getProductNames().size(), 6, "Expected six products in inventory");
-        Assert.assertTrue(inventoryPage.containsProduct(TestDataReader.get("product.name")),
+        TestStepReporter.assertEquals(inventoryPage.getProductNames().size(), 6, "Expected six products in inventory");
+        TestStepReporter.assertTrue(inventoryPage.containsProduct(TestDataReader.get("product.name")),
                 "Expected the configured product in inventory");
     }
 
@@ -32,13 +33,13 @@ public class InventoryCartTests extends BaseTest {
         String productName = TestDataReader.get("product.name");
         InventoryPage inventoryPage = loginToInventory();
         inventoryPage.addProductToCart(productName);
-        Assert.assertEquals(inventoryPage.getCartItemCount(), 1, "Expected one item after adding a product");
+        TestStepReporter.assertEquals(inventoryPage.getCartItemCount(), 1, "Expected one item after adding a product");
 
         inventoryPage.openCart();
         CartPage cartPage = new CartPage(getDriver());
-        Assert.assertTrue(cartPage.containsProduct(productName), "Expected selected product in cart");
+        TestStepReporter.assertTrue(cartPage.containsProduct(productName), "Expected selected product in cart");
         cartPage.removeProduct(productName);
-        Assert.assertEquals(cartPage.getItemCount(), 0, "Expected an empty cart after removing the product");
+        TestStepReporter.assertEquals(cartPage.getItemCount(), 0, "Expected an empty cart after removing the product");
     }
 
     @Test(description = "Cart shows the selected product name, description, price, and quantity")
@@ -49,9 +50,9 @@ public class InventoryCartTests extends BaseTest {
         inventoryPage.openCart();
         CartPage cartPage = new CartPage(getDriver());
 
-        Assert.assertTrue(cartPage.containsProduct(productName), "Expected selected product in cart");
-        Assert.assertFalse(cartPage.getProductDescription(productName).isBlank(), "Expected a product description");
-        Assert.assertEquals(cartPage.getProductPrice(productName), TestDataReader.get("product.price"));
-        Assert.assertEquals(cartPage.getProductQuantity(productName), "1");
+        TestStepReporter.assertTrue(cartPage.containsProduct(productName), "Expected selected product in cart");
+        TestStepReporter.assertFalse(cartPage.getProductDescription(productName).isBlank(), "Expected a product description");
+        TestStepReporter.assertEquals(cartPage.getProductPrice(productName), TestDataReader.get("product.price"));
+        TestStepReporter.assertEquals(cartPage.getProductQuantity(productName), "1");
     }
 }

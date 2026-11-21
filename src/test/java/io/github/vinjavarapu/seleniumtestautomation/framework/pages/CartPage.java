@@ -3,6 +3,7 @@ package io.github.vinjavarapu.seleniumtestautomation.framework.pages;
 import java.util.List;
 
 import io.github.vinjavarapu.seleniumtestautomation.framework.base.BasePage;
+import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -19,6 +20,7 @@ public class CartPage extends BasePage {
     public CartPage(WebDriver driver) {
         super(driver);
         visibleElement(cartList);
+        TestStepReporter.record("Cart page is displayed");
     }
 
     public boolean containsProduct(String productName) {
@@ -44,14 +46,17 @@ public class CartPage extends BasePage {
     }
 
     public String getProductDescription(String productName) {
+        TestStepReporter.record("Reading cart description for: " + productName);
         return itemFor(productName).findElement(By.cssSelector(".inventory_item_desc")).getText();
     }
 
     public String getProductPrice(String productName) {
+        TestStepReporter.record("Reading cart price for: " + productName);
         return itemFor(productName).findElement(By.cssSelector(".inventory_item_price")).getText();
     }
 
     public String getProductQuantity(String productName) {
+        TestStepReporter.record("Reading cart quantity for: " + productName);
         return itemFor(productName).findElement(By.cssSelector(".cart_quantity")).getText();
     }
 

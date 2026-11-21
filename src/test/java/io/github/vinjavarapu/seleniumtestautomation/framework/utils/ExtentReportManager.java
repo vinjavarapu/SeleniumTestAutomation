@@ -2,9 +2,13 @@ package io.github.vinjavarapu.seleniumtestautomation.framework.utils;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 import io.github.vinjavarapu.seleniumtestautomation.framework.config.FrameworkConfig;
+import io.github.vinjavarapu.seleniumtestautomation.framework.driver.DriverManager;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,19 +84,26 @@ public final class ExtentReportManager {
             spark.config().setReportName(FrameworkConfig.reportName());
             spark.config().setTheme(Theme.DARK);
             spark.config().setJs(REPORT_SUMMARY_SCRIPT);
+            spark.config().setTimelineEnabled(true);
             extent = new ExtentReports();
             extent.attachReporter(spark);
             extent.setSystemInfo("Framework", "Selenium + Java + TestNG");
             extent.setSystemInfo("Environment", FrameworkConfig.environment());
+            extent.setSystemInfo("Application URL", FrameworkConfig.baseUrl());
             extent.setSystemInfo("Browser", FrameworkConfig.browser());
+            extent.setSystemInfo("Browser Version", browserVersion());
             extent.setSystemInfo("Headless", String.valueOf(FrameworkConfig.headless()));
-            extent.setSystemInfo("OS", System.getProperty("os.name"));
+            extent.setSystemInfo("OS Name", System.getProperty("os.name", "Unknown"));
+            extent.setSystemInfo("OS Version", System.getProperty("os.version", "Unknown"));
+            extent.setSystemInfo("Java Version", System.getProperty("java.version", "Unknown"));
+            extent.setSystemInfo("Executed By", System.getProperty("user.name", "Unknown"));
         }
         return extent;
     }
 
-    public static void startTest(String name, String description) {
+    public static void startTest(String name, String description, String... categories) {
         ExtentTest test = getExtent().createTest(name, description == null ? "" : description);
+        if (categories != null && categories.length > 0) test.assignCategory(categories);
         CURRENT_TEST.set(test);
     }
 
@@ -112,15 +123,10 @@ public final class ExtentReportManager {
         test.fail(failure);
     }
 
-    public static void attachScreenshot(byte[] screenshot, String title) {
+    public static void attachScreenshot(String screenshot, String title) {
         ExtentTest test = CURRENT_TEST.get();
-        if (test == null || screenshot == null) return;
-        try {
-            test.addScreenCaptureFromBase64String(
-                    java.util.Base64.getEncoder().encodeToString(screenshot), title);
-        } catch (Exception exception) {
-            test.warning("Screenshot could not be attached: " + exception.getMessage());
-        }
+        if (test == null || screenshot == null || screenshot.isBlank()) return;
+        test.info(MediaEntityBuilder.createScreenCaptureFromBase64String(screenshot, title).build());
     }
 
     public static void skipped(String message) {
@@ -141,5 +147,17 @@ public final class ExtentReportManager {
 
     public static void clearCurrentTest() {
         CURRENT_TEST.remove();
+    }
+
+    private static String browserVersion() {
+        try {
+            WebDriver driver = DriverManager.getDriver();
+            if (driver instanceof RemoteWebDriver remoteDriver) {
+                return remoteDriver.getCapabilities().getBrowserVersion();
+            }
+        } catch (IllegalStateException exception) {
+            return "Not available";
+        }
+        return "Not available";
     }
 }
