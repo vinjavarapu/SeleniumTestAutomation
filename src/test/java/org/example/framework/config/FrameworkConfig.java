@@ -99,7 +99,7 @@ public final class FrameworkConfig {
     }
 
     public static long implicitWaitSeconds() {
-        return positiveLong("implicitWaitSeconds", 0, false);
+        return positiveLong("implicitWaitSeconds", 0, true);
     }
 
     public static int retryCount() {
