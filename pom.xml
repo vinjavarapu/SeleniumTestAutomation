@@ -116,5 +116,44 @@
                 <suite.xml>src/test/resources/suites/unit.xml</suite.xml>
             </properties>
         </profile>
+        <profile>
+            <id>security</id>
+            <properties>
+                <suite.xml>src/test/resources/suites/unit.xml</suite.xml>
+                <maven.test.skip>true</maven.test.skip>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>12.2.2</version>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/security-dependency-check</outputDirectory>
+                            <formats>
+                                <format>HTML</format>
+                                <format>JSON</format>
+                            </formats>
+                            <prettyPrint>true</prettyPrint>
+                            <skipTestScope>false</skipTestScope>
+                            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                            <failBuildOnCVSS>11</failBuildOnCVSS>
+                            <failOnError>true</failOnError>
+                            <connectionTimeout>10000</connectionTimeout>
+                            <readTimeout>120000</readTimeout>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>dependency-check</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

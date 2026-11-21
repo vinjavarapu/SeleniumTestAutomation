@@ -1,0 +1,72 @@
+name: Dependency security scan
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pom.xml'
+      - '.github/workflows/dependency-check.yml'
+  pull_request:
+    paths:
+      - 'pom.xml'
+      - '.github/workflows/dependency-check.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '30 3 * * 0'
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-check:
+    name: OWASP Dependency-Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        # actions/checkout v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Set up Java 25
+        # actions/setup-java v6.0.1
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Get cache date
+        id: cache-date
+        shell: bash
+        run: echo "date=$(date -u +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Dependency-Check vulnerability database
+        # actions/cache v4.2.4
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: ${{ runner.os }}-dependency-check-${{ steps.cache-date.outputs.date }}-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-dependency-check-${{ steps.cache-date.outputs.date }}-
+            ${{ runner.os }}-dependency-check-
+
+      - name: Run OWASP Dependency-Check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        shell: bash
+        run: |
+          if [[ -n "${NVD_API_KEY:-}" ]]; then
+            mvn --batch-mode --no-transfer-progress -Psecurity verify -DskipTests -DnvdApiKeyEnvironmentVariable=NVD_API_KEY
+          else
+            mvn --batch-mode --no-transfer-progress -Psecurity verify -DskipTests
+          fi
+
+      - name: Upload Dependency-Check reports
+        # actions/upload-artifact v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dependency-check-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/security-dependency-check/
+          if-no-files-found: warn
+          retention-days: 30
