@@ -2,6 +2,7 @@ package io.github.vinjavarapu.seleniumtestautomation.framework.pages;
 
 import io.github.vinjavarapu.seleniumtestautomation.framework.base.BasePage;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import java.util.List;
@@ -104,6 +105,7 @@ public class InventoryPage extends BasePage {
     public void openMenu() {
         click(menuButton, "Opening the side menu");
         wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
+        waitForMenuAnimation();
     }
 
     public boolean isMenuOpen() {
@@ -113,6 +115,21 @@ public class InventoryPage extends BasePage {
     public void closeMenu() {
         click(closeMenuButton, "Closing the side menu");
         wait.until(driver -> "true".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
+        waitForMenuAnimation();
+    }
+
+    private void waitForMenuAnimation() {
+        ((JavascriptExecutor) driver).executeAsyncScript(
+                "const menu = arguments[0];"
+                        + "const done = arguments[arguments.length - 1];"
+                        + "requestAnimationFrame(() => requestAnimationFrame(() => {"
+                        + "const active = menu.getAnimations({subtree: true})"
+                        + ".filter(animation => animation.playState === 'running' "
+                        + "|| animation.playState === 'pending');"
+                        + "Promise.all(active.map(animation => animation.finished.catch(() => undefined)))"
+                        + ".then(() => done());"
+                        + "}));",
+                driver.findElement(menuContainer));
     }
 
     public void logout() {
