@@ -15,6 +15,7 @@ public class InventoryPage extends BasePage {
     private final By sortSelect = By.cssSelector("[data-test='product-sort-container']");
     private final By menuButton = By.id("react-burger-menu-btn");
     private final By closeMenuButton = By.id("react-burger-cross-btn");
+    private final By menuContainer = By.cssSelector(".bm-menu-wrap");
     private final By logoutLink = By.id("logout_sidebar_link");
     private final By resetLink = By.id("reset_sidebar_link");
     private final By allItemsLink = By.id("inventory_sidebar_link");
@@ -102,13 +103,18 @@ public class InventoryPage extends BasePage {
 
     public void openMenu() {
         click(menuButton, "Opening the side menu");
+        wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
     }
+
     public boolean isMenuOpen() {
-        return "false".equals(driver.findElement(By.cssSelector(".bm-menu-wrap")).getAttribute("aria-hidden"));
+        return "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden"));
     }
+
     public void closeMenu() {
         click(closeMenuButton, "Closing the side menu");
+        wait.until(driver -> "true".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
     }
+
     public void logout() {
         click(logoutLink, "Logging out");
         wait.until(driver -> !driver.getCurrentUrl().contains("inventory.html"));
