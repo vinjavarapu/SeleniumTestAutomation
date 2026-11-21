@@ -1,14 +1,12 @@
 package org.example.framework.base;
 
-import java.time.Duration;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.framework.config.FrameworkConfig;
 import org.example.framework.driver.DriverFactory;
 import org.example.framework.driver.DriverManager;
+import org.example.framework.utils.WaitHelper;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
@@ -20,17 +18,33 @@ public abstract class BaseTest {
     public void startBrowser() {
         logger.info("Starting {} browser (headless={})", FrameworkConfig.browser(), FrameworkConfig.headless());
 
+        WebDriver driver = null;
+        boolean registered = false;
         try {
-            WebDriver driver = DriverFactory.createDriver();
+            driver = DriverFactory.createDriver();
             DriverManager.setDriver(driver);
+            registered = true;
+            org.openqa.selenium.Capabilities capabilities = ((org.openqa.selenium.remote.RemoteWebDriver) driver)
+                    .getCapabilities();
+            Object driverVersion = capabilities.getCapability("chrome.chromedriverVersion");
+            if (driverVersion == null) driverVersion = capabilities.getCapability("moz:geckodriverVersion");
+            if (driverVersion == null) driverVersion = capabilities.getCapability("msedge.msedgedriverVersion");
+            logger.info("Started browser={} version={} driverVersion={}", capabilities.getBrowserName(),
+                    capabilities.getBrowserVersion(), driverVersion == null ? "not reported" : driverVersion);
 
-            long implicitWaitSeconds = FrameworkConfig.implicitWaitSeconds();
-            if (implicitWaitSeconds > 0) {
-                driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitWaitSeconds));
-            }
             driver.manage().window().maximize();
         } catch (RuntimeException exception) {
             logger.error("Could not start browser", exception);
+            try {
+                if (registered) {
+                    DriverManager.quitDriver();
+                } else {
+                    if (driver != null) driver.quit();
+                    DriverManager.quitDriver();
+                }
+            } catch (RuntimeException cleanupFailure) {
+                exception.addSuppressed(cleanupFailure);
+            }
             throw exception;
         }
     }
@@ -49,7 +63,8 @@ public abstract class BaseTest {
         return DriverManager.getDriver();
     }
 
-    protected WebDriverWait getWait() {
-        return new WebDriverWait(getDriver(), Duration.ofSeconds(FrameworkConfig.explicitWaitSeconds()));
+    protected WaitHelper getWait() {
+        return new WaitHelper(getDriver());
     }
+
 }

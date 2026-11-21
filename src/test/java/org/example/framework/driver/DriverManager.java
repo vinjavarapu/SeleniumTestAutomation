@@ -1,6 +1,7 @@
 package org.example.framework.driver;
 
 import org.openqa.selenium.WebDriver;
+import java.util.Objects;
 
 /** Keeps each test thread's browser separate, enabling safe parallel runs later. */
 public final class DriverManager {
@@ -18,6 +19,10 @@ public final class DriverManager {
     }
 
     public static void setDriver(WebDriver driver) {
+        Objects.requireNonNull(driver, "driver must not be null");
+        if (DRIVER.get() != null) {
+            throw new IllegalStateException("A WebDriver is already attached to this test thread");
+        }
         DRIVER.set(driver);
     }
 

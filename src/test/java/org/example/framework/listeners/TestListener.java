@@ -3,6 +3,7 @@ package org.example.framework.listeners;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.framework.driver.DriverManager;
+import org.example.framework.reporting.TestStepReporter;
 import org.example.framework.utils.ExtentReportManager;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -29,13 +30,21 @@ public class TestListener implements ITestListener, ISuiteListener {
     @Override
     public void onTestStart(ITestResult result) {
         ExtentReportManager.startTest(result.getName(), result.getMethod().getDescription());
+        TestStepReporter.register(ExtentReportManager::step);
         logger.info("Test started: {}", result.getName());
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        logger.info("Test passed: {}", result.getName());
-        ExtentReportManager.pass("Test completed successfully");
+        boolean retried = RetryAnalyzer.consumeRetriedOutcome();
+        logger.info(retried ? "Test passed after retry: {}" : "Test passed: {}", result.getName());
+        try {
+            ExtentReportManager.pass(retried
+                    ? "Test passed after a retry; see the earlier first-attempt failure in this report and CI logs"
+                    : "Test completed successfully");
+        } finally {
+            TestStepReporter.clear();
+        }
     }
 
     @Override
@@ -44,6 +53,7 @@ public class TestListener implements ITestListener, ISuiteListener {
                 getDriverUrl());
         ExtentReportManager.fail(result.getThrowable());
         captureAndAttachScreenshot(result.getName());
+        TestStepReporter.clear();
     }
 
     @Override
@@ -51,6 +61,7 @@ public class TestListener implements ITestListener, ISuiteListener {
         String reason = result.getThrowable() == null ? "Test was skipped" : result.getThrowable().toString();
         logger.warn("Test skipped: {}", result.getName());
         ExtentReportManager.skipped(reason);
+        TestStepReporter.clear();
     }
 
     @Override

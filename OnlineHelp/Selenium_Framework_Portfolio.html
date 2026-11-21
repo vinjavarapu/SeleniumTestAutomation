@@ -71,10 +71,10 @@
   <p class="subtitle">A maintainable browser automation project for validating an end-to-end e-commerce journey, from login through order confirmation.</p>
 
   <div class="metrics">
-    <div class="metric"><strong>44</strong><span>Test executions<br>passing locally</span></div>
+    <div class="metric"><strong>47</strong><span>Regression tests passed<br>in the 2026-11-21 local run</span></div>
     <div class="metric"><strong>58</strong><span>Scenarios in the<br>source catalogue</span></div>
     <div class="metric"><strong>3</strong><span>Configurable browsers<br>Chrome · Firefox · Edge</span></div>
-    <div class="metric"><strong>CI</strong><span>GitHub Actions<br>headless Chrome</span></div>
+    <div class="metric"><strong>CI</strong><span>PR, main push, nightly<br>smoke + Chrome regression</span></div>
   </div>
 
   <h2 class="section-title">Framework design <small>Page Object Model with reusable test infrastructure</small></h2>
@@ -99,7 +99,7 @@
     <div class="design-card"><b>Tests stay readable</b><p>Test classes hold scenario intent and assertions. Page classes expose focused actions and read-only state.</p></div>
     <div class="design-card"><b>Browser setup is centralized</b><p>BaseTest creates and closes browsers, captures failure screenshots, and records test outcomes.</p></div>
     <div class="design-card"><b>Waits follow application state</b><p>Explicit waits check page navigation, cart counts, and checkout transitions instead of fixed sleeps.</p></div>
-    <div class="design-card"><b>Data stays outside test logic</b><p>Public demo credentials and customer values are read from a classpath properties file.</p></div>
+    <div class="design-card"><b>Data stays outside test logic</b><p>Public demo fixtures come from classpath properties; runtime environment values can override them for private systems.</p></div>
   </div>
 
   <div class="stack"><b>Technology:</b> Java 25 · Selenium WebDriver 4.52 · TestNG 7.11 · Maven · WebDriverManager · Log4j · ExtentReports</div>
@@ -110,7 +110,7 @@
   <div class="topline"><span>Coverage · Reporting · Execution</span><span class="pill">Regression suite</span></div>
   <div class="page-header">
     <h2>What the suite validates</h2>
-    <p>Independent browser tests cover high-value customer flows and the supporting checks that keep them reliable.</p>
+    <p>Independent browser tests cover customer flows and related UI behavior on the public SauceDemo practice site.</p>
   </div>
 
   <div class="coverage-grid">
@@ -128,21 +128,22 @@
         <li>Log4j console and rolling-file logs under <b>target/logs/</b></li>
         <li>Extent report at <b>target/extent-reports/</b></li>
         <li>Automatic failure screenshots under <b>target/screenshots/</b></li>
+        <li>Retry-enabled diagnostic runs retain and label the first failure and identify a later retry pass.</li>
         <li>TestNG and Surefire XML/text reports under <b>target/surefire-reports/</b></li>
       </ul>
     </div>
     <div class="panel">
       <h3>GitHub Actions</h3>
-      <p>Workflow runs on pushes and pull requests to <b>main</b>, and can be started manually.</p>
-      <p>Ubuntu runner · Temurin Java 25 · Chrome headless · Maven clean verify.</p>
-      <p>The workflow has passed; the local suite also passes with 44 executions.</p>
+      <p>Workflow runs on pull requests and pushes to <b>main</b>, nightly, or manually.</p>
+      <p>Smoke runs on Chrome and Firefox; regression runs on Chrome. CI retries are disabled.</p>
+      <p>The 47 regression and 3 smoke tests passed in a local Edge run on 2026-11-21. These results are a point-in-time run, not a pass-rate or reliability guarantee.</p>
     </div>
   </div>
 
   <div class="code"><span class="label">Run the suite</span>mvn --batch-mode --no-transfer-progress clean verify -Dbrowser=chrome -Dheadless=true<br><br><span class="label">Run visibly or choose another browser</span>mvn clean test -Dheadless=false<br>mvn clean test -Dbrowser=firefox<br>mvn clean test -Dbrowser=edge</div>
 
   <div class="project-link"><b>Source code</b><a href="https://github.com/vinjavarapu/SeleniumTestAutomation">github.com/vinjavarapu/SeleniumTestAutomation ↗</a></div>
-  <p class="scope-note">Scope note: the 58-case PDF is the design catalogue; the current executable suite automates broad functional coverage across those areas, not every listed case. SauceDemo is a public practice site, so UI behavior may change over time.</p>
+  <p class="scope-note">Scope note: the 58-case PDF is the design catalogue; the executable suite automates functional coverage across those areas, not every listed case. ROI, timeline, pass-rate, and reliability figures are illustrative estimates unless supported by measured run data. SauceDemo is a public practice site, so UI behavior may change over time.</p>
 
   <div class="footer"><span>Java · Selenium WebDriver · TestNG · Maven · GitHub Actions</span><span>02 / 02</span></div>
 </section>

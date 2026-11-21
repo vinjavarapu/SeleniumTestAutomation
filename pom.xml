@@ -81,7 +81,6 @@
                         <headless>${headless}</headless>
                         <env>${env}</env>
                         <explicitWaitSeconds>${explicitWaitSeconds}</explicitWaitSeconds>
-                        <implicitWaitSeconds>${implicitWaitSeconds}</implicitWaitSeconds>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

@@ -2,36 +2,30 @@
 
 ## Execution model
 
-The framework uses two levels of isolation:
-
-1. **Within one Maven JVM:** TestNG runs methods in parallel. Each test method gets a new WebDriver through `BaseTest`; `DriverManager` stores it in a `ThreadLocal`, and the current Extent test is also thread-local. Browser sessions and page objects must never be shared between test methods.
-2. **Across environments and browser types:** run a separate Maven process per environment/browser combination. `FrameworkConfig` is immutable process-level configuration, so two environments must not be switched inside one JVM. GitHub Actions uses a matrix to run those processes concurrently.
-
-This design makes environment selection explicit at process startup and prevents one parallel test from changing another test's base URL or browser settings. For larger suites, move remote sessions to Selenium Grid or a managed browser service and cap matrix and TestNG concurrency to the provider's available session capacity.
+1. **Within one Maven JVM:** TestNG suites configure parallel method execution. `BaseTest` creates a browser session for each test method; `DriverManager` stores it in a `ThreadLocal`. Do not share browser sessions or page objects between test methods.
+2. **Across environments and browsers:** start a separate Maven process per environment/browser combination. `FrameworkConfig` is process-level configuration. GitHub Actions uses a matrix for these combinations.
 
 ## Run locally
 
 ```powershell
-# One environment and browser, with methods parallelized by the suite XML.
 mvn clean test -Psmoke -Denv=qa -Dbrowser=chrome -Dheadless=true -DretryCount=0
-
-# Run another environment in a separate process or terminal.
 mvn clean test -Psmoke -Denv=staging -Dbrowser=firefox -Dheadless=true -DretryCount=0
 ```
 
-To run against Selenium Grid, set `-DremoteUrl=http://localhost:4444/wd/hub`. Each test method creates its own remote session; provision enough Grid slots for the suite's TestNG `thread-count`.
+To use Selenium Grid, set `-DremoteUrl=http://localhost:4444/wd/hub`. Each test method creates its own session; provide enough Grid slots for the suite's TestNG thread count.
 
-## CI topology
+## CI coverage and browser versions
 
-The workflow matrix runs smoke tests for QA and staging on Chrome and Firefox, and runs regression tests for each environment on Chrome for main-branch pushes and scheduled runs. Matrix jobs use separate runners, Maven JVMs, and artifact names. Test retries are disabled in CI so an initial failure stays visible. Local retry behavior defaults to zero and can be enabled explicitly for investigation.
+Pull requests, pushes to `main`, and nightly scheduled runs execute the smoke profile on Chrome and Firefox and the regression profile on Chrome. QA runs by default. Setting the GitHub Actions repository variable `STAGING_BASE_URL` adds staging to the environment matrix. The regression profile runs on one browser to keep CI duration practical. All CI commands set `retryCount=0`, and failures therefore gate on the initial attempt. If retries are enabled for diagnosis locally, the report and log identify the first failure and whether a later attempt passed.
 
-Set the GitHub Actions repository variable `STAGING_BASE_URL` to a reachable, authorized staging URL to enable staging matrix jobs; without it, staging jobs are skipped. For local runs, configure `staging.properties` or pass `-DbaseUrl=...`. Do not put credentials in this file; pass secrets through the CI secret store and inject them at runtime. The SauceDemo demo credentials are public test data, not credentials for a private system.
+Third-party workflow actions are pinned to reviewed commit SHAs with version comments. The Chrome setup action installs a matching driver. Set `CHROME_VERSION` to a specific Chrome for Testing version to hold the Chrome regression browser fixed; update that repository variable deliberately when adopting a new browser version, then review the run before updating the value. If unset, the action uses the moving stable channel. Firefox smoke currently uses the version on the hosted runner. `BaseTest` records the actual browser and driver versions in the test logs, and workflow artifacts are unique per matrix job and run attempt.
+
+Keep credentials for private environments in CI secrets or runtime environment variables, not property files. `TESTDATA_<KEY>` environment variables override fixture properties, for example `TESTDATA_VALID_USERNAME` and `TESTDATA_VALID_PASSWORD`. Checked-in SauceDemo values are public demo data.
 
 ## Isolation requirements for future tests
 
-- Create and clean up test-owned data; avoid shared mutable accounts/cart state across sessions.
+- Create or clean up test-owned data only where the application supports it; the SauceDemo fixture currently uses a shared public demo account.
 - Keep WebDriver, page objects, and mutable test data scoped to one test invocation.
-- Use unique run and invocation identifiers for artifacts and any created backend records.
-- Keep retries off for release gating; report first-attempt failures if diagnostic retries are later introduced.
-- Set parallel limits from actual browser/Grid capacity and target-environment rate limits.
-- Keep environment selection at process startup. Do not mutate JVM system properties while tests are running.
+- Use unique run and invocation identifiers for artifacts and for any records created by supported application flows.
+- Keep retries off for release gating and set parallel limits from actual browser/Grid capacity and target-environment rate limits.
+- Select the environment at process startup; do not mutate JVM system properties while tests are running.

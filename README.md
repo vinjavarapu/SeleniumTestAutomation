@@ -14,22 +14,24 @@ A seasoned QA Leader with **17+ years of IT experience** specializing in archite
 
 ## Selenium Java Automation Framework
 
-Enterprise-grade Maven, Selenium, and TestNG framework using SauceDemo as the practice e-commerce application.
+Maven, Selenium, and TestNG framework using SauceDemo as the practice e-commerce application.
 
 ## Project layout
 
 ```text
 src/test/java/org/example/framework/
   base/BaseTest.java              Browser lifecycle, simplified with listener-based reporting
-  base/BasePage.java              Shared explicit waits and page actions
-  config/FrameworkConfig.java     Typed configuration with env-aware property files
+  base/BasePage.java              Shared page actions backed by explicit waits
+  config/ConfigReader.java        Central config.properties + environment overrides
+  config/FrameworkConfig.java     Typed configuration access
   driver/DriverManager.java       Thread-local WebDriver access (parallel-safe)
   driver/DriverFactory.java       Browser driver creation (local or remote)
   listeners/TestListener.java     Extent reporting, screenshots, pass/fail handling
-  listeners/RetryAnalyzer.java    Retry flaky tests automatically
+  listeners/RetryAnalyzer.java    Optional retries after the first attempt (disabled by default)
   listeners/RetryTransformer.java Apply retry logic to all @Test methods
   pages/                          Login, inventory, cart, and checkout pages
   utils/TestDataReader.java       Reads test data from the classpath
+  utils/WaitHelper.java           Reusable explicit-wait conditions
 src/test/java/org/example/framework/tests/
   LoginTests.java                 Valid and invalid login scenarios (smoke)
   CheckoutTests.java              Login-to-order-confirmation journey (regression)
@@ -37,8 +39,8 @@ src/test/java/org/example/framework/tests/
   CatalogueRegressionTests.java   Coverage based on the SauceDemo test catalogue (regression)
   SmokeTest.java                  Basic smoke test (smoke)
 src/test/resources/
+  config.properties              Non-secret defaults (baseUrl, browser, timeouts, retry)
   config/
-    default.properties            Default configuration (baseUrl, browser, timeouts, retry)
     qa.properties                 QA environment overrides
     staging.properties            Staging environment overrides
   suites/
@@ -48,37 +50,38 @@ src/test/resources/
   log4j2.xml                      Console and rolling-file logging
   testdata/saucedemo.properties   Public demo credentials and checkout data
 .github/workflows/
-  selenium-tests.yml              CI: smoke (PR, matrix: chrome+firefox), regression (main, chrome)
+  selenium-tests.yml              CI: smoke and Chrome regression on PRs, main pushes, and nightly runs
 ```
 
 **Enterprise features:**
-- **Typed configuration**: Per-environment property files (default, qa, staging) with system-property overrides
+- **Typed configuration**: Central defaults, environment overrides (qa, staging), and system-property overrides
 - **Parallel execution**: Suites define thread counts; `-Psmoke` and `-Pregression` profiles select subsets
-- **Retry mechanism**: Failed tests auto-retry (configurable, default 1 attempt)
+- **Retry mechanism**: Configurable retries after the first attempt (default: 0 retries, 1 total attempt)
 - **Listener-based reporting**: Extent reports generated via TestListener; screenshot attachment on failure
 - **Modular driver factory**: Local or RemoteWebDriver (Grid/Docker ready)
-- **CI/CD matrix**: GitHub Actions runs smoke tests on all PRs (Chrome + Firefox), regression on main/nightly
+- **CI coverage**: Pull requests run smoke tests on Chrome and Firefox plus the regression suite on Chrome; pushes to `main` and nightly scheduled runs also run both profiles. Staging jobs are enabled by `STAGING_BASE_URL`.
 
 ## Concurrent and multi-environment execution
 
-TestNG parallelizes methods within each run, with a new thread-local WebDriver per test. Run each environment/browser combination in a separate Maven process; the CI workflow uses this model for concurrent QA/staging and Chrome/Firefox smoke coverage. CI retries are disabled so flaky first attempts remain visible. Set the `STAGING_BASE_URL` GitHub Actions repository variable to enable staging jobs. See [`OnlineHelp/Concurrent_Execution_Design.md`](OnlineHelp/Concurrent_Execution_Design.md) for capacity, isolation, and Grid guidance.
+TestNG parallelizes methods within each run, with a new thread-local WebDriver per test. Run each environment/browser combination in a separate Maven process. CI uses this model for QA/staging and Chrome/Firefox smoke coverage. CI retries are disabled (`retryCount=0`), so a first-attempt failure gates the run. Set the `STAGING_BASE_URL` GitHub Actions repository variable to enable staging jobs. Browser and driver versions are written to workflow logs; hosted runner updates can change them. See [`OnlineHelp/Concurrent_Execution_Design.md`](OnlineHelp/Concurrent_Execution_Design.md) for capacity, isolation, and Grid guidance.
 
 ## Configuration
 
 Configuration precedence (highest to lowest):
 1. System properties (`-Dbrowser=firefox`)
 2. Environment-specific file (`src/test/resources/config/{env}.properties`, selected by `-Denv=qa`)
-3. Default file (`src/test/resources/config/default.properties`)
+3. Defaults in `src/test/resources/config.properties`
 
 **Available properties:**
 - `baseUrl`: Application root (default: `https://www.saucedemo.com/`)
-- `browser`: chrome, firefox, or edge (default: chrome)
+- `browser`: chrome, firefox, or edge (default: edge in `config.properties`)
 - `headless`: true/false (default: true)
 - `explicitWaitSeconds`: WebDriverWait timeout (default: 10)
-- `implicitWaitSeconds`: Implicit wait (default: 0 — explicit waits preferred)
-- `retryCount`: Max test retries on failure (default: 0; retries are opt-in)
+- `retryCount`: Additional retries after the initial attempt (default: 0; `2` means up to 3 total attempts)
 - `remoteUrl`: Selenium Grid URL for RemoteWebDriver (default: empty — uses local)
 - `reportName`: Extent report title (default: Selenium Test Execution Report)
+
+The framework uses explicit waits only; `WaitHelper` centralizes presence, visibility, clickability, URL, and custom conditions. There are no fixed `Thread.sleep` calls or implicit waits. Public SauceDemo fixtures are checked in under `testdata/saucedemo.properties`. For private test environments, provide values at runtime with `TESTDATA_<KEY>` environment variables (for example, `TESTDATA_VALID_USERNAME` and `TESTDATA_VALID_PASSWORD`) and use CI secrets to populate them. Do not commit private credentials in property files. Set the GitHub Actions repository variable `CHROME_VERSION` to a specific Chrome for Testing version to hold Chrome regression runs at that version; update it deliberately after reviewing a browser upgrade. If unset, CI uses the moving stable channel.
 
 ## Run the suite
 
@@ -125,4 +128,4 @@ Run a specific group:
 mvn test -Dgroups=smoke
 ```
 
-The test catalogue is in [`SauceDemo_Selenium_Java_Test_Cases.pdf`](OnlineHelp/SauceDemo_Selenium_Java_Test_Cases.pdf). Regression coverage includes login validation, inventory and sorting, product details, cart contents and removal, checkout validation and totals, order confirmation, navigation, session behavior, responsive inventory, keyboard traversal, and multi-item checkout.
+The test catalogue is in [`SauceDemo_Selenium_Java_Test_Cases.pdf`](OnlineHelp/SauceDemo_Selenium_Java_Test_Cases.pdf). Regression coverage includes login validation, inventory and sorting, product details, cart contents and removal, checkout validation and totals, order confirmation, navigation, session behavior, responsive inventory, keyboard traversal, and multi-item checkout. ROI, pass-rate, timeline, and reliability figures in portfolio materials are illustrative estimates unless supported by measured run data; this repository does not contain such measurements.
