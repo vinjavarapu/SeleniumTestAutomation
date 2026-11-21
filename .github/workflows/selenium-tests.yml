@@ -13,6 +13,35 @@ permissions:
   contents: read
 
 jobs:
+  unit:
+    name: Framework unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        # actions/checkout v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Set up Java 25
+        # actions/setup-java v6.0.1
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Run framework unit tests
+        run: mvn --batch-mode --no-transfer-progress clean test -Punit
+
+      - name: Upload unit test reports
+        # actions/upload-artifact v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: unit-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/surefire-reports/
+          retention-days: 30
+
   smoke:
     name: Smoke tests (${{ matrix.environment }} / ${{ matrix.browser }})
     runs-on: ubuntu-latest

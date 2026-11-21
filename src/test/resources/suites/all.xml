@@ -2,13 +2,13 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="All Tests" parallel="methods" thread-count="3">
     <listeners>
-        <listener class-name="org.example.framework.listeners.RetryTransformer"/>
-        <listener class-name="org.example.framework.listeners.TestListener"/>
+        <listener class-name="io.github.vinjavarapu.seleniumtestautomation.framework.listeners.RetryTransformer"/>
+        <listener class-name="io.github.vinjavarapu.seleniumtestautomation.framework.listeners.TestListener"/>
     </listeners>
 
     <test name="All Tests">
         <packages>
-            <package name="org.example.framework.tests"/>
+            <package name="io.github.vinjavarapu.seleniumtestautomation.framework.tests"/>
         </packages>
     </test>
 </suite>

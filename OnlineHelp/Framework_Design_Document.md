@@ -4,10 +4,11 @@ This document describes the framework currently present in this repository. It i
 
 ## Current capabilities
 
-- TestNG tests use page objects under `src/test/java/org/example/framework/pages` and listener based ExtentReports output.
+- TestNG tests use page objects under `src/test/java/io/github/vinjavarapu/seleniumtestautomation/framework/pages` and listener-based ExtentReports output.
+- `mvn test -Punit` runs fast framework configuration tests without starting a browser. Browser creation validates the selected environment configuration, browser, URLs, wait timeout, retry count, and headless setting.
 - `-Psmoke` selects the smoke tests; `-Pregression` selects the regression tests. The suites configure parallel TestNG execution.
 - Configuration comes from classpath property files and Maven system properties. `retryCount` means additional retries after the initial attempt; it defaults to `0` (one total attempt).
-- GitHub Actions runs smoke tests in Chrome and Firefox and regression tests in Chrome for pull requests, `main` pushes, and the nightly schedule. A QA environment runs by default; a staging matrix entry is added when the repository variable `STAGING_BASE_URL` is nonempty. CI explicitly sets retries to zero.
+- GitHub Actions runs framework unit tests, smoke tests in Chrome and Firefox, and regression tests in Chrome for pull requests, `main` pushes, and the nightly schedule. A QA environment runs by default; a staging matrix entry is added when the repository variable `STAGING_BASE_URL` is nonempty. CI explicitly sets retries to zero.
 - CI uploads Surefire, Extent, log, and screenshot output as run-specific artifacts. Browser and driver version commands are recorded in CI logs; hosted runner images can update those versions.
 
 ## Configuration and test data
@@ -21,6 +22,7 @@ Any ROI, pass-rate, timeline, execution-time, or reliability figures in portfoli
 ## Running locally
 
 ```bash
+mvn clean test -Punit
 mvn clean test -Psmoke
 mvn clean test -Pregression
 mvn clean test -Pregression -DretryCount=2
