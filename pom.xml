@@ -12,7 +12,7 @@
         <maven.compiler.release>25</maven.compiler.release>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <selenium.version>4.52.0</selenium.version>
+        <selenium.version>4.53.0</selenium.version>
         <testng.version>7.11.0</testng.version>
         <webdrivermanager.version>6.4.0</webdrivermanager.version>
         <log4j.version>2.26.1</log4j.version>
