@@ -4,6 +4,7 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import io.github.vinjavarapu.seleniumtestautomation.framework.config.FrameworkConfig;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
@@ -11,6 +12,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -42,15 +44,28 @@ public final class DriverFactory {
     }
 
     private static WebDriver createChromeDriver(boolean headless) {
-        WebDriverManager.chromedriver().setup();
+        String chromeDriverPath = System.getProperty("webdriver.chrome.driver");
+        ChromeDriverService service = null;
+        if (chromeDriverPath != null && !chromeDriverPath.isBlank()) {
+            service = new ChromeDriverService.Builder()
+                    .usingDriverExecutable(new File(chromeDriverPath.trim()))
+                    .build();
+        } else {
+            WebDriverManager.chromedriver().setup();
+        }
+
         ChromeOptions options = new ChromeOptions();
+        String chromeBinaryPath = System.getProperty("webdriver.chrome.binary");
+        if (chromeBinaryPath != null && !chromeBinaryPath.isBlank()) {
+            options.setBinary(chromeBinaryPath.trim());
+        }
         if (headless) {
             options.addArguments("--headless=new", "--window-size=1920,1080");
             if (System.getProperty("os.name", "").toLowerCase().contains("linux")) {
                 options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
             }
         }
-        return new ChromeDriver(options);
+        return service == null ? new ChromeDriver(options) : new ChromeDriver(service, options);
     }
 
     private static WebDriver createFirefoxDriver(boolean headless) {
