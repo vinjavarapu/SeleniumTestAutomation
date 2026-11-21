@@ -106,13 +106,22 @@ public class InventoryPage extends BasePage {
     }
 
     public void openMenu() {
-        click(menuButton, "Opening the side menu");
+        if (!isMenuLinkVisible(resetLink)) {
+            click(menuButton, "Opening the side menu");
+        }
         wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
+        visibleElement(resetLink);
         waitForMenuAnimation();
+        wait.until(driver -> isMenuLinkVisible(resetLink));
     }
 
     public boolean isMenuOpen() {
-        return "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden"));
+        return driver.findElements(menuContainer).stream()
+                .anyMatch(menu -> "false".equals(menu.getAttribute("aria-hidden")));
+    }
+
+    private boolean isMenuLinkVisible(By locator) {
+        return driver.findElements(locator).stream().anyMatch(WebElement::isDisplayed);
     }
 
     public void closeMenu() {
@@ -136,18 +145,24 @@ public class InventoryPage extends BasePage {
     }
 
     public void logout() {
+        openMenu();
         click(logoutLink, "Logging out");
         wait.until(driver -> !driver.getCurrentUrl().contains("inventory.html"));
     }
     public void resetAppState() {
+        openMenu();
         click(resetLink, "Resetting application state");
         wait.until(driver -> getCartItemCount() == 0);
     }
     public void clickAllItems() {
+        openMenu();
         click(allItemsLink, "Selecting All Items");
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory.html"));
     }
-    public void clickAbout() { click(aboutLink, "Opening Sauce Labs About page"); }
+    public void clickAbout() {
+        openMenu();
+        click(aboutLink, "Opening Sauce Labs About page");
+    }
 
     public boolean hasRemoveButton(String productName) {
         return driver.findElements(By.cssSelector("[data-test='remove-" + productId(productName) + "']")).size() > 0;
