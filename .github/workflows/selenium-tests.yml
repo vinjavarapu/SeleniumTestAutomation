@@ -74,6 +74,14 @@ jobs:
           chrome-version: ${{ vars.CHROME_VERSION || 'stable' }}
           install-chromedriver: true
 
+      - name: Validate Chrome and ChromeDriver major versions
+        if: matrix.browser == 'chrome'
+        run: |
+          browser_major="$(google-chrome --version | grep -oE '[0-9]+' | head -n 1)"
+          driver_major="$(chromedriver --version | grep -oE '[0-9]+' | head -n 1)"
+          echo "Chrome major: $browser_major; ChromeDriver major: $driver_major"
+          test "$browser_major" = "$driver_major"
+
       - name: Run smoke tests
         env:
           BASE_URL: ${{ matrix.environment == 'staging' && vars.STAGING_BASE_URL || '' }}
@@ -129,6 +137,13 @@ jobs:
         with:
           chrome-version: ${{ vars.CHROME_VERSION || 'stable' }}
           install-chromedriver: true
+
+      - name: Validate Chrome and ChromeDriver major versions
+        run: |
+          browser_major="$(google-chrome --version | grep -oE '[0-9]+' | head -n 1)"
+          driver_major="$(chromedriver --version | grep -oE '[0-9]+' | head -n 1)"
+          echo "Chrome major: $browser_major; ChromeDriver major: $driver_major"
+          test "$browser_major" = "$driver_major"
 
       - name: Run regression tests
         env:

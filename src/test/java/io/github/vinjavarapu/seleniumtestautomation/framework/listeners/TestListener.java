@@ -12,7 +12,6 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 import org.testng.ISuiteListener;
-import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -42,9 +41,8 @@ public class TestListener implements ITestListener, ISuiteListener {
         }
 
         Method method = result.getMethod().getConstructorOrMethod().getMethod();
-        Test testAnnotation = method.getAnnotation(Test.class);
         String[] groups = result.getMethod().getGroups();
-        if (testAnnotation == null || testAnnotation.groups().length == 0) {
+        if (groups == null || groups.length == 0) {
             groups = new String[] {defaultCategory(result.getMethod().getConstructorOrMethod().getMethod())};
         }
         ExtentReportManager.startTest(testName, result.getMethod().getDescription(), groups);

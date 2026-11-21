@@ -11,6 +11,8 @@ import org.openqa.selenium.WebDriver;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
+import java.util.Map;
+
 /** Common browser lifecycle for TestNG test classes. */
 public abstract class BaseTest {
     protected final Logger logger = LogManager.getLogger(getClass());
@@ -27,9 +29,7 @@ public abstract class BaseTest {
             registered = true;
             org.openqa.selenium.Capabilities capabilities = ((org.openqa.selenium.remote.RemoteWebDriver) driver)
                     .getCapabilities();
-            Object driverVersion = capabilities.getCapability("chrome.chromedriverVersion");
-            if (driverVersion == null) driverVersion = capabilities.getCapability("moz:geckodriverVersion");
-            if (driverVersion == null) driverVersion = capabilities.getCapability("msedge.msedgedriverVersion");
+            Object driverVersion = getDriverVersion(capabilities);
             logger.info("Started browser={} version={} driverVersion={}", capabilities.getBrowserName(),
                     capabilities.getBrowserVersion(), driverVersion == null ? "not reported" : driverVersion);
 
@@ -48,6 +48,17 @@ public abstract class BaseTest {
             }
             throw exception;
         }
+    }
+
+    private Object getDriverVersion(org.openqa.selenium.Capabilities capabilities) {
+        Object version = nestedCapability(capabilities.getCapability("chrome"), "chromedriverVersion");
+        if (version == null) version = capabilities.getCapability("moz:geckodriverVersion");
+        if (version == null) version = nestedCapability(capabilities.getCapability("msedge"), "msedgedriverVersion");
+        return version;
+    }
+
+    private Object nestedCapability(Object capability, String name) {
+        return capability instanceof Map<?, ?> values ? values.get(name) : null;
     }
 
     @AfterMethod(alwaysRun = true)

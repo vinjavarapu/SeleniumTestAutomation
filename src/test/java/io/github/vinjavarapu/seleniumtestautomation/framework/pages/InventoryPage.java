@@ -106,22 +106,17 @@ public class InventoryPage extends BasePage {
     }
 
     public void openMenu() {
-        if (!isMenuLinkVisible(resetLink)) {
+        if (!isMenuOpen()) {
             click(menuButton, "Opening the side menu");
         }
         wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
-        visibleElement(resetLink);
         waitForMenuAnimation();
-        wait.until(driver -> isMenuLinkVisible(resetLink));
+        visibleElement(resetLink);
     }
 
     public boolean isMenuOpen() {
         return driver.findElements(menuContainer).stream()
                 .anyMatch(menu -> "false".equals(menu.getAttribute("aria-hidden")));
-    }
-
-    private boolean isMenuLinkVisible(By locator) {
-        return driver.findElements(locator).stream().anyMatch(WebElement::isDisplayed);
     }
 
     public void closeMenu() {

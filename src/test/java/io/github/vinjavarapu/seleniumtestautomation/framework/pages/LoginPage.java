@@ -21,14 +21,7 @@ public class LoginPage extends BasePage {
         logger.info("Opening login page");
         TestStepReporter.record("Opening the SauceDemo login page");
         driver.get(FrameworkConfig.baseUrl());
-        try {
-            visibleElement(usernameField);
-        } catch (org.openqa.selenium.TimeoutException firstLoadFailure) {
-            logger.warn("Login form did not load on the first request; refreshing once");
-            TestStepReporter.record("Refreshing the login page after the form did not load");
-            driver.navigate().refresh();
-            visibleElement(usernameField);
-        }
+        visibleElement(usernameField);
     }
 
     public void enterUsername(String username) {

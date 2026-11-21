@@ -9,7 +9,6 @@ import io.github.vinjavarapu.seleniumtestautomation.framework.pages.CheckoutOver
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.InventoryPage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.LoginPage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.utils.TestDataReader;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class CheckoutTests extends BaseTest {

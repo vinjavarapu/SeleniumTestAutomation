@@ -3,7 +3,6 @@ package io.github.vinjavarapu.seleniumtestautomation.framework.tests;
 import io.github.vinjavarapu.seleniumtestautomation.framework.base.BaseTest;
 import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import io.github.vinjavarapu.seleniumtestautomation.framework.config.FrameworkConfig;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class SmokeTest extends BaseTest {

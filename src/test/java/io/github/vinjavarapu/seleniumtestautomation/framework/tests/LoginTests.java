@@ -5,7 +5,6 @@ import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStep
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.InventoryPage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.LoginPage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.utils.TestDataReader;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class LoginTests extends BaseTest {
