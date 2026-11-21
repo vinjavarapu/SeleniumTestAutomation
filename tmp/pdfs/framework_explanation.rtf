@@ -1,0 +1,48 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Aptos;}{\f1 Aptos Display;}{\f2 Consolas;}}
+{\colortbl;\red23\green50\blue77;\red0\green132\blue137;\red61\green77\blue93;\red226\green241\blue241;\red241\green245\blue249;\red255\green255\blue255;}
+\paperw12240\paperh15840\margl900\margr900\margt850\margb850
+{\header\pard\brdrb\brdrs\brdrw8\brdrcf4\sa150\cf3\f0\fs16 SELENIUM JAVA TEST AUTOMATION\tab FRAMEWORK OVERVIEW\par}
+{\footer\pard\brdrt\brdrs\brdrw8\brdrcf4\sa0\cf3\f0\fs16 Internal project guide\tab Page {\field{\*\fldinst PAGE}{\fldrslt 1}} of 2\par}
+\pard\sa0\sl240\slmult1\f0\fs22
+\pard\sb220\sa80\cf2\f0\fs18 AUTOMATION FRAMEWORK  |  TWO-PAGE GUIDE\par
+\pard\sb20\sa100\cf1\b\f1\fs52 Selenium Java\line Test Automation Framework\b0\par
+\pard\sa240\cf3\f0\fs24 A practical guide to structure, browser concurrency,\line multi-environment runs, and execution evidence.\par
+\pard\sb100\sa90\brdrb\brdrs\brdrw18\brdrcf2\par
+\pard\sb140\sa100\cf1\b\fs30 What this framework does\b0\par
+\pard\sa150\cf3\fs22 This Maven project automates browser workflows against SauceDemo using Selenium WebDriver and TestNG. Tests are grouped into smoke and regression suites, page objects keep UI operations reusable, and listeners capture outcomes and failure evidence. It is a focused UI automation framework and a foundation for broader quality engineering practices.\par
+\pard\sb100\sa80\cf1\b\fs27 Execution flow\b0\par
+\pard\li220\sa45\cf2\b 1. Configure\b0\tab Select an environment and browser through properties or Maven system properties.\par
+\pard\li220\sa45\cf2\b 2. Start session\b0\tab BaseTest creates a fresh local or remote WebDriver for each test method.\par
+\pard\li220\sa45\cf2\b 3. Exercise UI\b0\tab Test classes call page objects, which use explicit waits and normal Selenium interactions.\par
+\pard\li220\sa45\cf2\b 4. Capture result\b0\tab TestListener records pass, fail, skip, URL, and failure screenshots.\par
+\pard\li220\sa45\cf2\b 5. Publish evidence\b0\tab Extent HTML, Surefire XML, logs, and screenshots are saved as run artifacts.\par
+\pard\sb120\sa80\cf1\b\fs27 Main building blocks\b0\par
+\pard\sa55\cf3\fs21\bullet\tab \b Test layer\b0 - Login, inventory/cart, checkout, smoke, and catalogue regression scenarios.\par
+\pard\sa55\cf3\fs21\bullet\tab \b Page layer\b0 - Login, inventory, product, cart, and checkout page objects hide locator and interaction details.\par
+\pard\sa55\cf3\fs21\bullet\tab \b Driver layer\b0 - DriverFactory supports Chrome, Firefox, Edge, and RemoteWebDriver; DriverManager keeps each session thread-local.\par
+\pard\sa55\cf3\fs21\bullet\tab \b Config and data\b0 - FrameworkConfig reads default and environment property files, then applies system-property overrides. Demo test data is separate from environment settings.\par
+\pard\sa55\cf3\fs21\bullet\tab \b Listener and reports\b0 - TestListener writes Extent results and failure screenshots; report and screenshot names include run context to reduce collisions.\par
+\pard\sb100\sa100\brdrb\brdrs\brdrw18\brdrcf2\par
+\pard\sa0\cf3\fs18 STACK  Java 25  |  Maven  |  Selenium 4  |  TestNG  |  ExtentReports\par
+\page
+\pard\sb180\sa70\cf2\f0\fs18 RUN MODEL  |  ISOLATION  |  OPERATIONS\par
+\pard\sb20\sa140\cf1\b\f1\fs40 Concurrent browsers and environments\b0\par
+\pard\sa120\cf3\f0\fs22 Concurrency is split across two boundaries. Inside one Maven JVM, TestNG runs methods in parallel and gives each method its own WebDriver thread-local. Across environments and browser combinations, use separate Maven processes or CI matrix jobs. Environment configuration is fixed when a JVM starts; do not change system properties while tests are running.\par
+\pard\sb100\sa60\cf1\b\fs27 Isolation rules\b0\par
+\pard\li220\sa55\cf3\fs21\bullet\tab Never share a WebDriver or mutable page object between test methods.\par
+\pard\li220\sa55\cf3\fs21\bullet\tab Use test-owned data and accounts; avoid concurrent mutation of shared carts or records.\par
+\pard\li220\sa55\cf3\fs21\bullet\tab Match TestNG thread counts and CI matrix parallelism to browser/Grid capacity and environment limits.\par
+\pard\li220\sa55\cf3\fs21\bullet\tab Retries default to zero so first-attempt failures remain visible. Enable retries only for local diagnosis.\par
+\pard\sb100\sa60\cf1\b\fs27 Run examples\b0\par
+\pard\sb35\sa80\highlight5\cf1\f2\fs18 mvn clean test -Psmoke -Denv=qa -Dbrowser=chrome -Dheadless=true\par
+\pard\sa90\highlight5\cf1\f2\fs18 mvn clean test -Pregression -Denv=staging -Dbrowser=firefox -DremoteUrl=http://localhost:4444\par
+\pard\sa100\highlight0\cf3\f0\fs20 The second command assumes a reachable staging URL configured in staging.properties (or supplied with -DbaseUrl) and a Selenium Grid endpoint.\par
+\pard\sb100\sa60\cf1\b\fs27 CI and artifacts\b0\par
+\pard\sa65\cf3\fs21 GitHub Actions runs smoke checks on pull requests across Chrome and Firefox. Staging jobs are included when the STAGING_BASE_URL repository variable is set. Regression runs on main-branch pushes and the nightly schedule, using Chrome per configured environment. Matrix jobs have separate runners and artifact names.\par
+\pard\sa65\cf3\fs21 Each job uploads the Extent HTML report, Surefire XML results, logs, and screenshots. Grid capacity should be set to at least the maximum number of concurrent test methods per runner.\par
+\pard\sb100\sa60\cf1\b\fs27 Scope and responsible use\b0\par
+\pard\sa70\cf3\fs21 The current suite targets SauceDemo and uses its public demo credentials. The staging URL is project-specific and must be configured to an authorized, reachable non-production system. This framework provides browser UI coverage; it does not by itself provide API testing, production monitoring, test-data provisioning, trend dashboards, or release approval policy.\par
+\pard\sb140\sa80\brdrb\brdrs\brdrw18\brdrcf2\par
+\pard\sa0\cf3\fs18 PROJECT NOTES  See README.md and OnlineHelp/Concurrent_Execution_Design.md for configuration and execution details.\par
+}
