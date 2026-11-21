@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 import org.example.framework.config.FrameworkConfig;
 import org.example.framework.utils.ExtentReportManager;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -34,7 +33,7 @@ public abstract class BasePage {
         logger.info("{}", actionDescription);
         ExtentReportManager.step(actionDescription);
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        element.click();
     }
 
     protected void enterText(By locator, String value, String actionDescription) {

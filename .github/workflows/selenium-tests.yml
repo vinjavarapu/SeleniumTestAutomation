@@ -14,12 +14,15 @@ permissions:
 
 jobs:
   smoke:
-    name: Smoke tests (${{ matrix.browser }})
+    name: Smoke tests (${{ matrix.environment }} / ${{ matrix.browser }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
+      fail-fast: false
+      max-parallel: 4
       matrix:
         browser: [chrome, firefox]
+        environment: ${{ fromJSON(vars.STAGING_BASE_URL != '' && '["qa","staging"]' || '["qa"]') }}
 
     steps:
       - name: Check out repository
@@ -33,24 +36,31 @@ jobs:
           cache: maven
 
       - name: Run smoke tests
-        run: mvn --batch-mode --no-transfer-progress clean test -Psmoke -Dbrowser=${{ matrix.browser }} -Dheadless=true
+        env:
+          BASE_URL: ${{ matrix.environment == 'staging' && vars.STAGING_BASE_URL || '' }}
+        run: mvn --batch-mode --no-transfer-progress clean test -Psmoke -Denv=${{ matrix.environment }} -DbaseUrl="$BASE_URL" -Dbrowser=${{ matrix.browser }} -Dheadless=true -DretryCount=0 -DrunId=${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload test reports
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: smoke-reports-${{ matrix.browser }}
+          name: smoke-reports-${{ matrix.environment }}-${{ matrix.browser }}
           path: |
             target/extent-reports/
             target/screenshots/
             target/logs/
+            target/surefire-reports/
           retention-days: 30
 
   regression:
-    name: Regression tests (Chrome)
+    name: Regression tests (${{ matrix.environment }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'schedule'
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{ fromJSON(vars.STAGING_BASE_URL != '' && '["qa","staging"]' || '["qa"]') }}
 
     steps:
       - name: Check out repository
@@ -64,15 +74,18 @@ jobs:
           cache: maven
 
       - name: Run regression tests
-        run: mvn --batch-mode --no-transfer-progress clean test -Pregression -Dbrowser=chrome -Dheadless=true
+        env:
+          BASE_URL: ${{ matrix.environment == 'staging' && vars.STAGING_BASE_URL || '' }}
+        run: mvn --batch-mode --no-transfer-progress clean test -Pregression -Denv=${{ matrix.environment }} -DbaseUrl="$BASE_URL" -Dbrowser=chrome -Dheadless=true -DretryCount=0 -DrunId=${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload test reports
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: regression-reports
+          name: regression-reports-${{ matrix.environment }}
           path: |
             target/extent-reports/
             target/screenshots/
             target/logs/
+            target/surefire-reports/
           retention-days: 30

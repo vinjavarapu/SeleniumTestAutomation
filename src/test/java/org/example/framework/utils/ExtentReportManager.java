@@ -64,8 +64,12 @@ public final class ExtentReportManager {
 
     private static synchronized ExtentReports getExtent() {
         if (extent == null) {
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            reportPath = Path.of("target", "extent-reports", "Test-Report-" + timestamp + ".html");
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS"));
+            String runId = System.getProperty("runId", "local").replaceAll("[^a-zA-Z0-9._-]", "_");
+            String environment = FrameworkConfig.environment().replaceAll("[^a-zA-Z0-9._-]", "_");
+            String browser = FrameworkConfig.browser().replaceAll("[^a-zA-Z0-9._-]", "_");
+            reportPath = Path.of("target", "extent-reports",
+                    "Test-Report-" + environment + "-" + browser + "-" + runId + "-" + timestamp + ".html");
             try {
                 Files.createDirectories(reportPath.getParent());
             } catch (Exception exception) {

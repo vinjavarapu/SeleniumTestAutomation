@@ -5,11 +5,12 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Typed configuration singleton. Loads from env-specific properties files with system property overrides.
- * Precedence: system property > env file > default.
+ * Immutable process-level configuration. Run different environments in separate JVMs
+ * (for example, separate CI matrix jobs); parallel TestNG methods within a JVM share
+ * one environment configuration but get independent browser sessions.
  */
 public final class FrameworkConfig {
-    private static final String ENV = System.getProperty("env", "qa");
+    private static final String ENV = System.getProperty("env", "qa").trim().toLowerCase();
     private static final String CONFIG_FILE = String.format("/config/%s.properties", ENV);
     private static final Properties DEFAULTS;
     private static final Properties ENV_CONFIG;
@@ -25,9 +26,10 @@ public final class FrameworkConfig {
     private static Properties loadResource(String resourcePath) {
         Properties props = new Properties();
         try (InputStream input = FrameworkConfig.class.getResourceAsStream(resourcePath)) {
-            if (input != null) {
-                props.load(input);
+            if (input == null) {
+                throw new IllegalStateException("Configuration resource not found: " + resourcePath);
             }
+            props.load(input);
         } catch (IOException exception) {
             throw new ExceptionInInitializerError(
                     "Could not load config resource: " + resourcePath);
@@ -76,19 +78,27 @@ public final class FrameworkConfig {
     }
 
     public static boolean headless() {
-        return Boolean.parseBoolean(getOptional("headless", "true"));
+        String value = getOptional("headless", "true");
+        if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
+            throw new IllegalArgumentException("Invalid boolean for headless: " + value);
+        }
+        return Boolean.parseBoolean(value);
     }
 
     public static long explicitWaitSeconds() {
-        return Long.parseLong(getOptional("explicitWaitSeconds", "10"));
+        return positiveLong("explicitWaitSeconds", 10, true);
     }
 
     public static long implicitWaitSeconds() {
-        return Long.parseLong(getOptional("implicitWaitSeconds", "0"));
+        return positiveLong("implicitWaitSeconds", 0, false);
     }
 
     public static int retryCount() {
-        return Integer.parseInt(getOptional("retryCount", "1"));
+        int retries = Integer.parseInt(getOptional("retryCount", "0"));
+        if (retries < 0) {
+            throw new IllegalArgumentException("retryCount must be zero or greater");
+        }
+        return retries;
     }
 
     public static String remoteUrl() {
@@ -101,5 +111,13 @@ public final class FrameworkConfig {
 
     public static String environment() {
         return ENV;
+    }
+
+    private static long positiveLong(String key, long defaultValue, boolean allowZero) {
+        long value = Long.parseLong(getOptional(key, Long.toString(defaultValue)));
+        if (value < 0 || (!allowZero && value == 0)) {
+            throw new IllegalArgumentException(key + (allowZero ? " must be zero or greater" : " must be greater than zero"));
+        }
+        return value;
     }
 }

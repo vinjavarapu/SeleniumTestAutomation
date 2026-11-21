@@ -59,6 +59,10 @@ src/test/resources/
 - **Modular driver factory**: Local or RemoteWebDriver (Grid/Docker ready)
 - **CI/CD matrix**: GitHub Actions runs smoke tests on all PRs (Chrome + Firefox), regression on main/nightly
 
+## Concurrent and multi-environment execution
+
+TestNG parallelizes methods within each run, with a new thread-local WebDriver per test. Run each environment/browser combination in a separate Maven process; the CI workflow uses this model for concurrent QA/staging and Chrome/Firefox smoke coverage. CI retries are disabled so flaky first attempts remain visible. Set the `STAGING_BASE_URL` GitHub Actions repository variable to enable staging jobs. See [`OnlineHelp/Concurrent_Execution_Design.md`](OnlineHelp/Concurrent_Execution_Design.md) for capacity, isolation, and Grid guidance.
+
 ## Configuration
 
 Configuration precedence (highest to lowest):
@@ -72,7 +76,7 @@ Configuration precedence (highest to lowest):
 - `headless`: true/false (default: true)
 - `explicitWaitSeconds`: WebDriverWait timeout (default: 10)
 - `implicitWaitSeconds`: Implicit wait (default: 0 — explicit waits preferred)
-- `retryCount`: Max test retries on failure (default: 1)
+- `retryCount`: Max test retries on failure (default: 0; retries are opt-in)
 - `remoteUrl`: Selenium Grid URL for RemoteWebDriver (default: empty — uses local)
 - `reportName`: Extent report title (default: Selenium Test Execution Report)
 
@@ -103,12 +107,12 @@ mvn clean test -Psmoke -Denv=staging -Dbrowser=firefox -Dheadless=false
 mvn clean test -Pregression -DremoteUrl=http://grid.example.com:4444 -Dbrowser=chrome
 ```
 
-**Increase retries on flaky environments:**
+**Enable retries for local diagnosis:**
 ```bash
 mvn clean test -Pregression -DretryCount=2
 ```
 
-Logs appear in console and in `target/logs/automation.log`. Test reports (with screenshots and detailed steps) are in `target/extent-reports/Test-Report-*.html`. Maven's `target/` directory is generated and ignored by Git.
+Logs appear in console and in `target/logs/automation.log`. Test reports (with screenshots and detailed steps) are in `target/extent-reports/Test-Report-*.html`; TestNG/Surefire XML reports are in `target/surefire-reports/`. Maven's `target/` directory is generated and ignored by Git.
 
 ## Tests and groups
 

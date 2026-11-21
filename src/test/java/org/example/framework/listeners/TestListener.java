@@ -86,7 +86,10 @@ public class TestListener implements ITestListener, ISuiteListener {
         try {
             Path screenshotDirectory = Path.of("target", "screenshots");
             Files.createDirectories(screenshotDirectory);
-            Path screenshotPath = screenshotDirectory.resolve(testName + ".png");
+            String invocation = Integer.toHexString(System.identityHashCode(Thread.currentThread()))
+                    + "-" + System.nanoTime();
+            String safeName = testName.replaceAll("[^a-zA-Z0-9._-]", "_");
+            Path screenshotPath = screenshotDirectory.resolve(safeName + "-" + invocation + ".png");
             Files.copy(((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE).toPath(),
                     screenshotPath, StandardCopyOption.REPLACE_EXISTING);
             logger.info("Saved failure screenshot to {}", screenshotPath.toAbsolutePath());
