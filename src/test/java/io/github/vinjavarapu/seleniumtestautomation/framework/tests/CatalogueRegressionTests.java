@@ -340,7 +340,6 @@ public class CatalogueRegressionTests extends BaseTest {
     public void resetAppStateClearsCart() {
         InventoryPage inventory = login();
         inventory.addProductToCart(TestDataReader.get("product.name"));
-        inventory.openMenu();
         inventory.resetAppState();
         TestStepReporter.assertEquals(inventory.getCartItemCount(), 0);
     }
