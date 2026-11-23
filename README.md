@@ -73,6 +73,18 @@ mvn --batch-mode test -Pregression -DremoteUrl=http://localhost:4444 -Dbrowser=c
 
 The supported browser values are `chrome`, `firefox`, and `edge`. Before starting a browser, the framework validates the application URL, browser, wait timeout, retry count, headless setting, and optional Grid URL. Environment values can be overridden with JVM properties such as `-DbaseUrl=https://test.example.com`.
 
+### Ubuntu / GCP VM setup
+
+For local Chrome runs on an Ubuntu VM, install Google Chrome Stable instead of Ubuntu's Snap Chromium package. The Snap launcher can fail to start reliably under ChromeDriver. From the repository root, run:
+
+```bash
+sudo bash scripts/setup-ubuntu-chrome.sh
+google-chrome --version
+mvn --batch-mode clean test -Psmoke -Denv=qa -Dbrowser=chrome -Dheadless=true
+```
+
+WebDriverManager downloads the ChromeDriver needed by the installed Chrome version. The VM needs outbound access to Google's apt repository and the driver download source. If the VM is behind a restricted network, use the project's remote Selenium Grid option instead.
+
 Configuration precedence (highest first): JVM system property, `config/{env}.properties`, then `config.properties`. The default environment is `qa`. Use runtime environment variables such as `TESTDATA_VALID_USERNAME` and `TESTDATA_VALID_PASSWORD` for private test data; do not put private credentials in the repository. Checked-in SauceDemo fixture values are public demo data.
 
 ## CI and artifacts
