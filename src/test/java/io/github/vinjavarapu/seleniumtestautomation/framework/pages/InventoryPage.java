@@ -110,8 +110,7 @@ public class InventoryPage extends BasePage {
             waitForMenuButtonUncovered();
             click(menuButton, "Opening the side menu");
         }
-        wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden"))
-                && driver.findElements(resetLink).stream().anyMatch(WebElement::isDisplayed));
+        wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
     }
 
     private void waitForMenuButtonUncovered() {
@@ -143,6 +142,8 @@ public class InventoryPage extends BasePage {
     }
     public void resetAppState() {
         openMenu();
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].scrollIntoView({block: 'center'});", driver.findElement(resetLink));
         click(resetLink, "Resetting application state");
         wait.until(driver -> getCartItemCount() == 0);
     }
