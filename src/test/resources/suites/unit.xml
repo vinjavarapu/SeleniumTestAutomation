@@ -8,6 +8,7 @@
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.unittests.FrameworkConfigTest"/>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.config.ConfigReaderTest"/>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.config.EnvironmentPreflightTest"/>
+            <class name="io.github.vinjavarapu.seleniumtestautomation.framework.driver.DriverFactoryTest"/>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.listeners.RetryAnalyzerTest"/>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.utils.CsvTestDataReaderTest"/>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.utils.UrlRedactorTest"/>

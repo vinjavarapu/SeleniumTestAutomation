@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress>
+        <notes><![CDATA[
+            ExtentReports 5.1.2 embeds Chart.js 2.7.2 in its static Spark HTML report script.
+            This framework generates local test-report files and does not pass untrusted options
+            to the embedded chart. Suppress only this bundled asset's Chart.js prototype-pollution
+            finding; continue scanning all other vulnerabilities and dependencies.
+        ]]></notes>
+        <filePath regex="true">.*extentreports-5\.1\.2\.jar.*</filePath>
+        <cve>CVE-2020-7746</cve>
+    </suppress>
+</suppressions>

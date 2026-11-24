@@ -92,10 +92,13 @@ public final class DriverFactory {
         return options;
     }
 
-    private static EdgeOptions createEdgeOptions(boolean headless) {
+    static EdgeOptions createEdgeOptions(boolean headless) {
         EdgeOptions options = new EdgeOptions();
         if (headless) {
             options.addArguments("--headless=new", "--window-size=1920,1080");
+            if (System.getProperty("os.name", "").toLowerCase().contains("linux")) {
+                options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
+            }
         }
         return options;
     }

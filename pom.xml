@@ -246,6 +246,9 @@
                             <prettyPrint>true</prettyPrint>
                             <skipTestScope>false</skipTestScope>
                             <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                            <suppressionFiles>
+                                <suppressionFile>config/security/dependency-check-suppressions.xml</suppressionFile>
+                            </suppressionFiles>
                             <failBuildOnCVSS>7</failBuildOnCVSS>
                             <failOnError>true</failOnError>
                             <connectionTimeout>10000</connectionTimeout>
