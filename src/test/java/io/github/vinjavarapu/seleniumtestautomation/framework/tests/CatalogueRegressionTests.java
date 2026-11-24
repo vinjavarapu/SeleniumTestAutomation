@@ -33,7 +33,11 @@ public class CatalogueRegressionTests extends BaseTest {
         LoginPage page = new LoginPage(getDriver());
         page.open();
         page.login(TestDataReader.get("valid.username"), TestDataReader.get("valid.password"));
-        return new InventoryPage(getDriver());
+        InventoryPage inventory = new InventoryPage(getDriver());
+        if (!inventory.isLoaded()) {
+            throw new IllegalStateException("Inventory page did not load after successful login");
+        }
+        return inventory;
     }
 
     private CheckoutOverviewPage checkoutWithOneProduct() {
