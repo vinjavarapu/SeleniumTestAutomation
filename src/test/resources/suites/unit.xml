@@ -4,6 +4,9 @@
     <test name="Framework Configuration">
         <classes>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.unittests.FrameworkConfigTest"/>
+            <class name="io.github.vinjavarapu.seleniumtestautomation.framework.config.ConfigReaderTest"/>
+            <class name="io.github.vinjavarapu.seleniumtestautomation.framework.utils.CsvTestDataReaderTest"/>
+            <class name="io.github.vinjavarapu.seleniumtestautomation.framework.utils.UrlRedactorTest"/>
         </classes>
     </test>
 </suite>

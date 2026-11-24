@@ -1,0 +1,7 @@
+username,password,expectedMessage
+unknown-user,secret_sauce,do not match
+standard_user,wrong_password,do not match
+,,Username is required
+standard_user,,Password is required
+,secret_sauce,Username is required
+locked_out_user,secret_sauce,locked out

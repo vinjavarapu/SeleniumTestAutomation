@@ -1,0 +1,5 @@
+firstName,lastName,postalCode,expectedMessage
+,,,First Name is required
+,Tester,10001,First Name is required
+Casey,,10001,Last Name is required
+Casey,Tester,,Postal Code is required

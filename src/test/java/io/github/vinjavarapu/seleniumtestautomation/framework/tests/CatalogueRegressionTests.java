@@ -16,6 +16,7 @@ import io.github.vinjavarapu.seleniumtestautomation.framework.pages.CheckoutOver
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.InventoryPage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.LoginPage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.pages.ProductDetailsPage;
+import io.github.vinjavarapu.seleniumtestautomation.framework.utils.CsvTestDataReader;
 import io.github.vinjavarapu.seleniumtestautomation.framework.utils.TestDataReader;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.By;
@@ -58,14 +59,7 @@ public class CatalogueRegressionTests extends BaseTest {
 
     @DataProvider(name = "rejectedLogins")
     public Object[][] rejectedLogins() {
-        return new Object[][] {
-                {"unknown-user", "secret_sauce", "do not match"},
-                {"standard_user", "wrong_password", "do not match"},
-                {"", "", "Username is required"},
-                {"standard_user", "", "Password is required"},
-                {"", "secret_sauce", "Username is required"},
-                {"locked_out_user", "secret_sauce", "locked out"}
-        };
+        return CsvTestDataReader.read("rejected-logins.csv", "username", "password", "expectedMessage");
     }
 
     @Test(dataProvider = "rejectedLogins", description = "SD-003..008: Invalid and incomplete login attempts are rejected")
@@ -122,11 +116,16 @@ public class CatalogueRegressionTests extends BaseTest {
 
     @DataProvider(name = "sortOrders")
     public Object[][] sortOrders() {
-        return new Object[][] {{"az", true, false}, {"za", true, true}, {"lohi", false, false}, {"hilo", false, true}};
+        Object[][] rows = CsvTestDataReader.read("sort-orders.csv", "sort", "names", "descending");
+        for (Object[] row : rows) {
+            row[1] = parseBoolean((String) row[1], "names");
+            row[2] = parseBoolean((String) row[2], "descending");
+        }
+        return rows;
     }
 
     @Test(dataProvider = "sortOrders", description = "SD-019..022: Inventory sorting orders names or prices correctly")
-    public void inventorySortingMatchesExpectedOrder(String sort, boolean names, boolean descending) {
+    public void inventorySortingMatchesExpectedOrder(String sort, Boolean names, Boolean descending) {
         InventoryPage inventory = login();
         String option = sort.trim();
         inventory.sortBy(option);
@@ -242,12 +241,14 @@ public class CatalogueRegressionTests extends BaseTest {
 
     @DataProvider(name = "checkoutValidation")
     public Object[][] checkoutValidation() {
-        return new Object[][] {
-                {null, null, null, "First Name is required"},
-                {null, "Tester", "10001", "First Name is required"},
-                {"Casey", null, "10001", "Last Name is required"},
-                {"Casey", "Tester", null, "Postal Code is required"}
-        };
+        Object[][] rows = CsvTestDataReader.read("checkout-validation.csv",
+                "firstName", "lastName", "postalCode", "expectedMessage");
+        for (Object[] row : rows) {
+            for (int column = 0; column < 3; column++) {
+                if (((String) row[column]).isBlank()) row[column] = null;
+            }
+        }
+        return rows;
     }
 
     @Test(dataProvider = "checkoutValidation", description = "SD-033..036: Checkout requires all customer fields")
@@ -259,6 +260,12 @@ public class CatalogueRegressionTests extends BaseTest {
         CheckoutInformationPage info = new CheckoutInformationPage(getDriver());
         info.continueWithInformation(first, last, postal);
         TestStepReporter.assertTrue(info.getErrorMessage().contains(message));
+    }
+
+    private static boolean parseBoolean(String value, String column) {
+        if ("true".equalsIgnoreCase(value)) return true;
+        if ("false".equalsIgnoreCase(value)) return false;
+        throw new IllegalStateException("Invalid boolean in sort-orders.csv column " + column + ": " + value);
     }
 
     @Test(description = "SD-039: Cancel checkout information returns to cart")

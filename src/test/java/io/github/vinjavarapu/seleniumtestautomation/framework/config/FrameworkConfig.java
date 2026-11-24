@@ -54,6 +54,8 @@ public final class FrameworkConfig {
     }
 
     public static void validate() {
+        validateEnvironmentBaseUrl(environment(), ConfigReader.hasExplicitValue("baseUrl"));
+
         String browser = browser().toLowerCase(Locale.ROOT);
         if (!browser.equals("chrome") && !browser.equals("firefox") && !browser.equals("edge")) {
             throw new IllegalArgumentException(
@@ -66,6 +68,13 @@ public final class FrameworkConfig {
 
         String remote = remoteUrl();
         if (!remote.isBlank()) validateHttpUrl("remoteUrl", remote);
+    }
+
+    static void validateEnvironmentBaseUrl(String environment, boolean hasExplicitBaseUrl) {
+        if ("staging".equalsIgnoreCase(environment) && !hasExplicitBaseUrl) {
+            throw new IllegalStateException(
+                    "Staging requires an explicit baseUrl via -DbaseUrl or the BASE_URL environment variable");
+        }
     }
 
     private static void validateHttpUrl(String key, String value) {

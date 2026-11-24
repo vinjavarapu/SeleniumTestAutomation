@@ -11,6 +11,7 @@ A Java, Selenium WebDriver, and TestNG sample framework for browser-based testin
 - Local Chrome, Firefox, and Edge drivers, plus remote Selenium Grid support
 - Thread-local WebDriver lifecycle for parallel TestNG methods
 - ExtentReports, structured logs, and failure screenshots
+- CSV-backed TestNG data providers for login, sorting, and checkout validation scenarios
 - Separate framework-configuration unit tests and browser smoke/regression suites
 - GitHub Actions coverage for Chrome/Firefox smoke tests and Chrome regression runs
 
@@ -40,7 +41,7 @@ src/test/java/io/github/vinjavarapu/seleniumtestautomation/framework/
   pages/         SauceDemo page objects
   reporting/     Test-step reporting bridge
   unittests/     Fast framework unit tests
-  utils/         Wait, test-data, and ExtentReports helpers
+  utils/         Wait, CSV/properties test-data, and ExtentReports helpers
   tests/         Smoke and regression browser tests
 src/test/resources/
   config/        QA and staging overrides
@@ -73,6 +74,10 @@ mvn --batch-mode test -Pregression -DremoteUrl=http://localhost:4444 -Dbrowser=c
 
 The supported browser values are `chrome`, `firefox`, and `edge`. Before starting a browser, the framework validates the application URL, browser, wait timeout, retry count, headless setting, and optional Grid URL. Environment values can be overridden with JVM properties such as `-DbaseUrl=https://test.example.com`.
 
+### Data-driven regression cases
+
+The regression suite loads scenario rows from CSV files under `src/test/resources/testdata/`. The `rejected-logins.csv`, `sort-orders.csv`, and `checkout-validation.csv` files are wired to TestNG data providers; add a row with the matching columns to add a case without changing the test method. Headers and row widths are validated before execution, and quoted commas/quotes are supported. Blank checkout fields mean “leave the field empty.” CSV cells can reference runtime environment variables with `${VARIABLE_NAME}` syntax; missing variables fail with a location-specific message without printing their values. The checked-in login values are public SauceDemo sample data; for client work, use environment references for secrets and keep client datasets out of source control.
+
 ### Ubuntu / GCP VM setup
 
 For local Chrome runs on an Ubuntu VM, install Google Chrome Stable instead of Ubuntu's Snap Chromium package. The Snap launcher can fail to start reliably under ChromeDriver. From the repository root, run:
@@ -87,7 +92,7 @@ WebDriverManager downloads the ChromeDriver needed by the installed Chrome versi
 
 Configuration precedence (highest first): JVM system property, framework environment variable, `config/{env}.properties`, then `config.properties`. The default environment is `qa`. Supported framework environment variables include `BASE_URL`, `BROWSER`, `HEADLESS`, `EXPLICIT_WAIT_SECONDS`, `RETRY_COUNT`, `REMOTE_URL`, and `REPORT_NAME`. Use runtime environment variables such as `TESTDATA_VALID_USERNAME` and `TESTDATA_VALID_PASSWORD` for private test data; do not put private credentials in the repository. Checked-in SauceDemo fixture values are public demo data.
 
-QA and staging intentionally use the same public SauceDemo sandbox URL. A CI staging run can override that URL through the `STAGING_BASE_URL` repository variable, or a local staging run can use `-DbaseUrl=https://your-sandbox.example.test`.
+QA uses the public SauceDemo sandbox. Staging requires an explicit authorized target and will fail validation rather than silently using the QA URL. Configure it through the `STAGING_BASE_URL` GitHub Actions variable or use `-Denv=staging -DbaseUrl=https://your-sandbox.example.test` locally. Keep credentials and tokens out of URLs; framework failure-URL logs and report URL metadata redact URL user information, sensitive query parameters, and fragments. Review exception details and screenshots before sharing artifacts because application output can contain sensitive data.
 
 ## CI and artifacts
 

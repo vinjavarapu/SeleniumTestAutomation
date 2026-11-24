@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import io.github.vinjavarapu.seleniumtestautomation.framework.driver.DriverManager;
 import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import io.github.vinjavarapu.seleniumtestautomation.framework.utils.ExtentReportManager;
+import io.github.vinjavarapu.seleniumtestautomation.framework.utils.UrlRedactor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -153,7 +154,7 @@ public class TestListener implements ITestListener, ISuiteListener {
 
     private String getDriverUrl() {
         try {
-            return DriverManager.getDriver().getCurrentUrl();
+            return UrlRedactor.redact(DriverManager.getDriver().getCurrentUrl());
         } catch (IllegalStateException exception) {
             return "N/A";
         }

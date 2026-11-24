@@ -89,7 +89,7 @@ public final class ExtentReportManager {
             extent.attachReporter(spark);
             extent.setSystemInfo("Framework", "Selenium + Java + TestNG");
             extent.setSystemInfo("Environment", FrameworkConfig.environment());
-            extent.setSystemInfo("Application URL", FrameworkConfig.baseUrl());
+            extent.setSystemInfo("Application URL", UrlRedactor.redact(FrameworkConfig.baseUrl()));
             extent.setSystemInfo("Browser", FrameworkConfig.browser());
             extent.setSystemInfo("Browser Version", browserVersion());
             extent.setSystemInfo("Headless", String.valueOf(FrameworkConfig.headless()));

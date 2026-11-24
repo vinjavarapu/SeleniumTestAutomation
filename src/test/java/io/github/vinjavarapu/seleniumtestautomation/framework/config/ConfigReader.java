@@ -20,6 +20,10 @@ public final class ConfigReader {
         return ENVIRONMENT;
     }
 
+    static boolean hasExplicitValue(String key) {
+        return isSet(System.getProperty(key)) || isSet(environmentValue(key));
+    }
+
     public static String get(String key) {
         String value = System.getProperty(key);
         if (isSet(value)) return value.trim();
