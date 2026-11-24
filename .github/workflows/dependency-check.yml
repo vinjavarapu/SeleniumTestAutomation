@@ -61,6 +61,16 @@ jobs:
             mvn --batch-mode --no-transfer-progress -Psecurity verify -DskipTests
           fi
 
+      - name: Validate Dependency-Check reports
+        if: always()
+        shell: bash
+        run: |
+          html="target/security-dependency-check/dependency-check-report.html"
+          json="target/security-dependency-check/dependency-check-report.json"
+          test -s "$html" || { echo "::error::Missing or empty Dependency-Check HTML report"; exit 1; }
+          test -s "$json" || { echo "::error::Missing or empty Dependency-Check JSON report"; exit 1; }
+          echo "Validated Dependency-Check HTML and JSON reports"
+
       - name: Upload Dependency-Check reports
         # actions/upload-artifact v4.6.2
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

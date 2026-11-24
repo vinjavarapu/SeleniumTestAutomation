@@ -3,6 +3,7 @@ package io.github.vinjavarapu.seleniumtestautomation.framework.config;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
 /** Loads immutable test configuration with environment and JVM overrides. */
@@ -23,6 +24,9 @@ public final class ConfigReader {
         String value = System.getProperty(key);
         if (isSet(value)) return value.trim();
 
+        value = environmentValue(key);
+        if (isSet(value)) return value.trim();
+
         value = ENVIRONMENT_OVERRIDES.getProperty(key);
         if (isSet(value)) return value.trim();
 
@@ -34,6 +38,9 @@ public final class ConfigReader {
 
     public static String getOptional(String key, String defaultValue) {
         String value = System.getProperty(key);
+        if (isSet(value)) return value.trim();
+
+        value = environmentValue(key);
         if (isSet(value)) return value.trim();
 
         value = ENVIRONMENT_OVERRIDES.getProperty(key);
@@ -66,5 +73,19 @@ public final class ConfigReader {
 
     private static boolean isSet(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private static String environmentValue(String key) {
+        Map<String, String> keyNames = Map.of(
+                "baseUrl", "BASE_URL",
+                "browser", "BROWSER",
+                "headless", "HEADLESS",
+                "explicitWaitSeconds", "EXPLICIT_WAIT_SECONDS",
+                "retryCount", "RETRY_COUNT",
+                "remoteUrl", "REMOTE_URL",
+                "reportName", "REPORT_NAME"
+        );
+        String environmentName = keyNames.get(key);
+        return environmentName == null ? null : System.getenv(environmentName);
     }
 }

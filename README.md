@@ -85,7 +85,9 @@ mvn --batch-mode clean test -Psmoke -Denv=qa -Dbrowser=chrome -Dheadless=true
 
 WebDriverManager downloads the ChromeDriver needed by the installed Chrome version. The VM needs outbound access to Google's apt repository and the driver download source. If the VM is behind a restricted network, use the project's remote Selenium Grid option instead.
 
-Configuration precedence (highest first): JVM system property, `config/{env}.properties`, then `config.properties`. The default environment is `qa`. Use runtime environment variables such as `TESTDATA_VALID_USERNAME` and `TESTDATA_VALID_PASSWORD` for private test data; do not put private credentials in the repository. Checked-in SauceDemo fixture values are public demo data.
+Configuration precedence (highest first): JVM system property, framework environment variable, `config/{env}.properties`, then `config.properties`. The default environment is `qa`. Supported framework environment variables include `BASE_URL`, `BROWSER`, `HEADLESS`, `EXPLICIT_WAIT_SECONDS`, `RETRY_COUNT`, `REMOTE_URL`, and `REPORT_NAME`. Use runtime environment variables such as `TESTDATA_VALID_USERNAME` and `TESTDATA_VALID_PASSWORD` for private test data; do not put private credentials in the repository. Checked-in SauceDemo fixture values are public demo data.
+
+QA and staging intentionally use the same public SauceDemo sandbox URL. A CI staging run can override that URL through the `STAGING_BASE_URL` repository variable, or a local staging run can use `-DbaseUrl=https://your-sandbox.example.test`.
 
 ## CI and artifacts
 
