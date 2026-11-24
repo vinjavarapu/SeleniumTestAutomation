@@ -34,7 +34,7 @@ public class CartPage extends BasePage {
     }
 
     public int getBadgeCount() {
-        return driver.findElements(cartBadge).isEmpty() ? 0 : Integer.parseInt(readText(cartBadge));
+        return readBadgeCount(cartBadge);
     }
 
     public boolean isCheckoutEnabled() {

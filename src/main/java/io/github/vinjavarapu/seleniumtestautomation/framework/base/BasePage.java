@@ -7,8 +7,11 @@ import io.github.vinjavarapu.seleniumtestautomation.framework.utils.WaitHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
+import java.util.List;
 
 /** Shared Selenium actions and explicit waits for page objects. */
 public abstract class BasePage {
@@ -50,6 +53,25 @@ public abstract class BasePage {
 
     protected String readText(By locator) {
         return visibleElement(locator).getText();
+    }
+
+    protected int readBadgeCount(By locator) {
+        return wait.until(currentDriver -> {
+            List<WebElement> badges = currentDriver.findElements(locator);
+            if (badges.isEmpty()) {
+                return 0;
+            }
+            try {
+                WebElement badge = badges.get(0);
+                if (!badge.isDisplayed()) {
+                    return null;
+                }
+                String text = badge.getText();
+                return text == null || text.isBlank() ? null : Integer.parseInt(text.trim());
+            } catch (StaleElementReferenceException exception) {
+                return null;
+            }
+        });
     }
 
     protected boolean isVisible(By locator) {

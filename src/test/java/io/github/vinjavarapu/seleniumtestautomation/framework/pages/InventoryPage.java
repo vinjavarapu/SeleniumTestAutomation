@@ -205,10 +205,7 @@ public class InventoryPage extends BasePage {
     }
 
     public int getCartItemCount() {
-        if (driver.findElements(cartBadge).isEmpty()) {
-            return 0;
-        }
-        return Integer.parseInt(readText(cartBadge));
+        return readBadgeCount(cartBadge);
     }
 
     public void openCart() {
