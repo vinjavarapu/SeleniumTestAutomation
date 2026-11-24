@@ -111,6 +111,7 @@ public class InventoryPage extends BasePage {
             click(menuButton, "Opening the side menu");
         }
         wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
+        visibleElement(resetLink);
     }
 
     private void waitForMenuButtonUncovered() {
@@ -142,8 +143,9 @@ public class InventoryPage extends BasePage {
     }
     public void resetAppState() {
         openMenu();
-        ((JavascriptExecutor) driver).executeScript(
-                "arguments[0].scrollIntoView({block: 'center'});", driver.findElement(resetLink));
+        WebElement reset = visibleElement(resetLink);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", reset);
+        visibleElement(resetLink);
         click(resetLink, "Resetting application state");
         wait.until(driver -> getCartItemCount() == 0);
     }
