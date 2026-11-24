@@ -226,7 +226,8 @@ public class CatalogueRegressionTests extends BaseTest {
 
         InventoryPage returned = new InventoryPage(getDriver());
         TestStepReporter.assertEquals(returned.getCartItemCount(), 1);
-        TestStepReporter.assertTrue(returned.hasRemoveButton(productName));
+        TestStepReporter.assertTrue(getWait().until(driver -> returned.hasRemoveButton(productName)),
+                "The product should remain in the cart after returning from product details");
     }
 
     @Test(description = "SD-027: Removing a cart item updates item list and badge")
