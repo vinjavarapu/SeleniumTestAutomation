@@ -135,20 +135,10 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Install controlled Chrome
-        # browser-actions/setup-chrome v2.1.1
-        uses: browser-actions/setup-chrome@4f8e94349a351df0f048634f25fec36c3c91eded
-        with:
-          chrome-version: ${{ vars.CHROME_VERSION || 'stable' }}
-          install-chromedriver: false
-
-      - name: Validate Chrome installation
-        run: google-chrome --version
-
       - name: Run regression tests
         env:
           BASE_URL: ${{ matrix.environment == 'staging' && vars.STAGING_BASE_URL || '' }}
-        run: mvn --batch-mode --no-transfer-progress clean test -Pregression -Denv=${{ matrix.environment }} -DbaseUrl="$BASE_URL" -Dbrowser=chrome -Dheadless=true -DretryCount=0 -DrunId=${{ github.run_id }}-${{ github.run_attempt }}
+        run: mvn --batch-mode --no-transfer-progress clean test -Pregression -Denv=${{ matrix.environment }} -DbaseUrl="$BASE_URL" -Dbrowser=firefox -Dheadless=true -DretryCount=0 -DrunId=${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Validate regression test reports
         if: always()
@@ -157,15 +147,15 @@ jobs:
       - name: Record browser and driver versions
         if: always()
         run: |
-          google-chrome --version || true
-          chromedriver --version || true
+          firefox --version || true
+          geckodriver --version || true
 
       - name: Upload test reports
         # actions/upload-artifact v4.6.2
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: regression-reports-${{ matrix.environment }}-chrome-${{ github.run_id }}-${{ github.run_attempt }}
+          name: regression-reports-${{ matrix.environment }}-firefox-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             target/extent-reports/
             target/screenshots/

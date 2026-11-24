@@ -13,7 +13,7 @@ A Java, Selenium WebDriver, and TestNG sample framework for browser-based testin
 - ExtentReports, structured logs, and failure screenshots
 - CSV-backed TestNG data providers for login, sorting, and checkout validation scenarios
 - Separate framework-configuration unit tests and browser smoke/regression suites
-- GitHub Actions coverage for Chrome/Firefox smoke tests and Chrome regression runs
+- GitHub Actions coverage for Chrome/Firefox smoke tests and Firefox regression runs
 
 ## Architecture
 
@@ -76,7 +76,7 @@ The supported browser values are `chrome`, `firefox`, and `edge`. Before startin
 
 ### Data-driven regression cases
 
-The regression suite loads scenario rows from CSV files under `src/test/resources/testdata/`. The `rejected-logins.csv`, `sort-orders.csv`, and `checkout-validation.csv` files are wired to TestNG data providers; add a row with the matching columns to add a case without changing the test method. Headers and row widths are validated before execution, and quoted commas/quotes are supported. Blank checkout fields mean “leave the field empty.” CSV cells can reference runtime environment variables with `${VARIABLE_NAME}` syntax; missing variables fail with a location-specific message without printing their values. The checked-in login values are public SauceDemo sample data; for client work, use environment references for secrets and keep client datasets out of source control.
+The regression suite loads scenario rows from CSV files under `src/test/resources/testdata/`. The `rejected-logins.csv`, `sort-orders.csv`, and `checkout-validation.csv` files are wired to TestNG data providers; add a row with the matching columns to add a case without changing the test method. Headers and row widths are validated before execution, and quoted commas/quotes are supported. Blank checkout fields mean “leave the field empty.” CSV cells can reference runtime environment variables with `${VARIABLE_NAME}` syntax; missing variables fail with a location-specific message without printing their values. The regression suite runs sequentially against the shared public SauceDemo demo to avoid concurrent-session interference; adjust `regression.xml` parallelism only when using an environment designed for parallel testing. The checked-in login values are public SauceDemo sample data; for client work, use environment references for secrets and keep client datasets out of source control.
 
 ### Ubuntu / GCP VM setup
 
@@ -96,7 +96,7 @@ QA uses the public SauceDemo sandbox. Staging requires an explicit authorized ta
 
 ## CI and artifacts
 
-GitHub Actions runs the unit suite and browser suites on pull requests, pushes to `main`, manual dispatches, and the nightly schedule. Chrome/Firefox smoke and Chrome regression runs use QA by default. Setting the repository variable `STAGING_BASE_URL` adds staging runs; `CHROME_VERSION` can pin the Chrome for Testing version. WebDriverManager resolves the ChromeDriver for the installed Chrome version. CI retries are disabled so a first-attempt failure remains visible.
+GitHub Actions runs the unit suite and browser suites on pull requests, pushes to `main`, manual dispatches, and the nightly schedule. Chrome/Firefox smoke and Firefox regression runs use QA by default. Firefox is used for the sequential regression suite because the shared public demo has shown unstable browser interactions under Chrome; smoke coverage still exercises both browsers. Setting the repository variable `STAGING_BASE_URL` adds staging runs; `CHROME_VERSION` can pin the Chrome for Testing version. WebDriverManager resolves browser drivers. CI retries are disabled so a first-attempt failure remains visible.
 
 Run artifacts include Surefire XML, Extent HTML reports, logs, and failure screenshots under `target/`. CI uploads browser-run artifacts for 30 days.
 

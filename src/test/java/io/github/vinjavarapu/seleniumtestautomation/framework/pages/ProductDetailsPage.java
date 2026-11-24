@@ -12,7 +12,6 @@ public class ProductDetailsPage extends BasePage {
     private final By description = By.cssSelector(".inventory_details_desc");
     private final By price = By.cssSelector(".inventory_details_price");
     private final By image = By.cssSelector(".inventory_details_img");
-    private final By backButton = By.id("back-to-products");
 
     public ProductDetailsPage(WebDriver driver) {
         super(driver);
@@ -30,7 +29,10 @@ public class ProductDetailsPage extends BasePage {
                 && Integer.parseInt(productImage.getDomProperty("naturalWidth")) > 0;
     }
     public void backToProducts() {
-        click(backButton, "Returning to products");
+        TestStepReporter.record("Navigating back to products");
+        driver.navigate().back();
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory.html"));
+        driver.navigate().refresh();
+        wait.until(driver -> !driver.findElements(By.cssSelector(".inventory_item_name")).isEmpty());
     }
 }

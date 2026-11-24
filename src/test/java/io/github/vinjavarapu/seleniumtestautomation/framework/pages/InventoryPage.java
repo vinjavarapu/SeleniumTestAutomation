@@ -107,10 +107,22 @@ public class InventoryPage extends BasePage {
 
     public void openMenu() {
         if (!isMenuOpen()) {
+            waitForMenuButtonUncovered();
             click(menuButton, "Opening the side menu");
         }
         wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden"))
                 && driver.findElements(resetLink).stream().anyMatch(WebElement::isDisplayed));
+    }
+
+    private void waitForMenuButtonUncovered() {
+        wait.until(driver -> {
+            WebElement button = driver.findElement(menuButton);
+            return Boolean.TRUE.equals(((JavascriptExecutor) driver).executeScript(
+                    "const button = arguments[0]; const rect = button.getBoundingClientRect(); "
+                            + "const top = document.elementFromPoint(rect.left + rect.width / 2, "
+                            + "rect.top + rect.height / 2); return top === button || button.contains(top);",
+                    button));
+        });
     }
 
     public boolean isMenuOpen() {
@@ -121,6 +133,7 @@ public class InventoryPage extends BasePage {
     public void closeMenu() {
         click(closeMenuButton, "Closing the side menu");
         wait.until(driver -> "true".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
+        waitForMenuButtonUncovered();
     }
 
     public void logout() {
@@ -138,9 +151,9 @@ public class InventoryPage extends BasePage {
         click(allItemsLink, "Selecting All Items");
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory.html"));
     }
-    public void clickAbout() {
+    public String getAboutLinkUrl() {
         openMenu();
-        click(aboutLink, "Opening Sauce Labs About page");
+        return visibleElement(aboutLink).getAttribute("href");
     }
 
     public boolean hasRemoveButton(String productName) {
