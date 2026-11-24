@@ -23,7 +23,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chromium.ChromiumDriver;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -471,8 +471,8 @@ public class CatalogueRegressionTests extends BaseTest {
     }
 
     private void resizeViewport(int width, int height) {
-        if (getDriver() instanceof ChromeDriver chromeDriver) {
-            chromeDriver.executeCdpCommand("Emulation.setDeviceMetricsOverride",
+        if (getDriver() instanceof ChromiumDriver chromiumDriver) {
+            chromiumDriver.executeCdpCommand("Emulation.setDeviceMetricsOverride",
                     Map.of("width", width, "height", height, "deviceScaleFactor", 1, "mobile", width < 600));
         } else {
             getDriver().manage().window().setSize(new Dimension(width, height));
