@@ -109,9 +109,8 @@ public class InventoryPage extends BasePage {
         if (!isMenuOpen()) {
             click(menuButton, "Opening the side menu");
         }
-        wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
-        waitForMenuAnimation();
-        visibleElement(resetLink);
+        wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden"))
+                && driver.findElements(resetLink).stream().anyMatch(WebElement::isDisplayed));
     }
 
     public boolean isMenuOpen() {
@@ -122,21 +121,6 @@ public class InventoryPage extends BasePage {
     public void closeMenu() {
         click(closeMenuButton, "Closing the side menu");
         wait.until(driver -> "true".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
-        waitForMenuAnimation();
-    }
-
-    private void waitForMenuAnimation() {
-        ((JavascriptExecutor) driver).executeAsyncScript(
-                "const menu = arguments[0];"
-                        + "const done = arguments[arguments.length - 1];"
-                        + "requestAnimationFrame(() => requestAnimationFrame(() => {"
-                        + "const active = menu.getAnimations({subtree: true})"
-                        + ".filter(animation => animation.playState === 'running' "
-                        + "|| animation.playState === 'pending');"
-                        + "Promise.all(active.map(animation => animation.finished.catch(() => undefined)))"
-                        + ".then(() => done());"
-                        + "}));",
-                driver.findElement(menuContainer));
     }
 
     public void logout() {
