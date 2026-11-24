@@ -5,6 +5,7 @@ import java.util.List;
 import io.github.vinjavarapu.seleniumtestautomation.framework.base.BasePage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -37,7 +38,7 @@ public class CartPage extends BasePage {
     }
 
     public boolean isCheckoutEnabled() {
-        return driver.findElement(checkoutButton).isEnabled();
+        return visibleElement(checkoutButton).isEnabled();
     }
 
     public void continueShopping() {
@@ -61,7 +62,7 @@ public class CartPage extends BasePage {
     }
 
     public void removeProduct(String productName) {
-        String productId = productName.trim().toLowerCase().replaceAll("[^a-z0-9]+", "-");
+        String productId = InventoryPage.productSlug(productName);
         int previousCount = getItemCount();
         By removeButton = By.cssSelector("[data-test='remove-" + productId + "']");
         click(removeButton, "Removing product from cart: " + productName);
@@ -71,7 +72,7 @@ public class CartPage extends BasePage {
     private WebElement itemFor(String productName) {
         return driver.findElements(cartItems).stream()
                 .filter(item -> item.findElement(By.cssSelector(".inventory_item_name")).getText().equals(productName))
-                .findFirst().orElseThrow(() -> new AssertionError("Product not found in cart: " + productName));
+                .findFirst().orElseThrow(() -> new NoSuchElementException("Product not found in cart: " + productName));
     }
 
     public void clickCheckout() {

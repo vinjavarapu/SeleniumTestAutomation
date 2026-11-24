@@ -3,8 +3,12 @@
 <suite name="Framework Unit Tests">
     <test name="Framework Configuration">
         <classes>
+            <class name="io.github.vinjavarapu.seleniumtestautomation.framework.api.ApiClientTest"/>
+            <class name="io.github.vinjavarapu.seleniumtestautomation.framework.base.BasePageTest"/>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.unittests.FrameworkConfigTest"/>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.config.ConfigReaderTest"/>
+            <class name="io.github.vinjavarapu.seleniumtestautomation.framework.config.EnvironmentPreflightTest"/>
+            <class name="io.github.vinjavarapu.seleniumtestautomation.framework.listeners.RetryAnalyzerTest"/>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.utils.CsvTestDataReaderTest"/>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.utils.UrlRedactorTest"/>
         </classes>

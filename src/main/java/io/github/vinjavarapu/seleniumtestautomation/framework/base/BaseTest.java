@@ -2,6 +2,7 @@ package io.github.vinjavarapu.seleniumtestautomation.framework.base;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.github.vinjavarapu.seleniumtestautomation.framework.config.EnvironmentPreflight;
 import io.github.vinjavarapu.seleniumtestautomation.framework.config.FrameworkConfig;
 import io.github.vinjavarapu.seleniumtestautomation.framework.driver.DriverFactory;
 import io.github.vinjavarapu.seleniumtestautomation.framework.driver.DriverManager;
@@ -11,14 +12,20 @@ import org.openqa.selenium.WebDriver;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
+import java.time.Duration;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Common browser lifecycle for TestNG test classes. */
 public abstract class BaseTest {
+    private static final Set<String> VERIFIED_TARGETS = ConcurrentHashMap.newKeySet();
     protected final Logger logger = LogManager.getLogger(getClass());
 
     @BeforeMethod(alwaysRun = true)
     public void startBrowser() {
+        FrameworkConfig.validate();
+        runPreflightIfEnabled();
         logger.info("Starting {} browser (headless={})", FrameworkConfig.browser(), FrameworkConfig.headless());
 
         WebDriver driver = null;
@@ -99,4 +106,13 @@ public abstract class BaseTest {
         getDriver().get(url);
     }
 
+    private void runPreflightIfEnabled() {
+        if (!FrameworkConfig.preflightCheck()) {
+            return;
+        }
+        String baseUrl = FrameworkConfig.baseUrl();
+        if (VERIFIED_TARGETS.add(baseUrl)) {
+            EnvironmentPreflight.verifyReachable(baseUrl, Duration.ofSeconds(FrameworkConfig.preflightTimeoutSeconds()));
+        }
+    }
 }

@@ -2,6 +2,7 @@ package io.github.vinjavarapu.seleniumtestautomation.framework.driver;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.github.vinjavarapu.seleniumtestautomation.framework.config.FrameworkConfig;
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
@@ -14,7 +15,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 
 /** Factory for creating local or remote WebDriver instances based on config. */
 public final class DriverFactory {
@@ -54,6 +55,21 @@ public final class DriverFactory {
             WebDriverManager.chromedriver().setup();
         }
 
+        ChromeOptions options = createChromeOptions(headless);
+        return service == null ? new ChromeDriver(options) : new ChromeDriver(service, options);
+    }
+
+    private static WebDriver createFirefoxDriver(boolean headless) {
+        WebDriverManager.firefoxdriver().setup();
+        return new FirefoxDriver(createFirefoxOptions(headless));
+    }
+
+    private static WebDriver createEdgeDriver(boolean headless) {
+        WebDriverManager.edgedriver().setup();
+        return new EdgeDriver(createEdgeOptions(headless));
+    }
+
+    private static ChromeOptions createChromeOptions(boolean headless) {
         ChromeOptions options = new ChromeOptions();
         String chromeBinaryPath = System.getProperty("webdriver.chrome.binary");
         if (chromeBinaryPath != null && !chromeBinaryPath.isBlank()) {
@@ -65,25 +81,23 @@ public final class DriverFactory {
                 options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
             }
         }
-        return service == null ? new ChromeDriver(options) : new ChromeDriver(service, options);
+        return options;
     }
 
-    private static WebDriver createFirefoxDriver(boolean headless) {
-        WebDriverManager.firefoxdriver().setup();
+    private static FirefoxOptions createFirefoxOptions(boolean headless) {
         FirefoxOptions options = new FirefoxOptions();
         if (headless) {
-            options.addArguments("-headless");
+            options.addArguments("-headless", "--width=1920", "--height=1080");
         }
-        return new FirefoxDriver(options);
+        return options;
     }
 
-    private static WebDriver createEdgeDriver(boolean headless) {
-        WebDriverManager.edgedriver().setup();
+    private static EdgeOptions createEdgeOptions(boolean headless) {
         EdgeOptions options = new EdgeOptions();
         if (headless) {
-            options.addArguments("--headless=new");
+            options.addArguments("--headless=new", "--window-size=1920,1080");
         }
-        return new EdgeDriver(options);
+        return options;
     }
 
     private static WebDriver createRemoteDriver(String remoteUrl) {
@@ -91,28 +105,16 @@ public final class DriverFactory {
             String browserName = FrameworkConfig.browser();
             boolean headless = FrameworkConfig.headless();
 
-            var options = switch (browserName.trim().toLowerCase()) {
-                case "chrome" -> {
-                    ChromeOptions opts = new ChromeOptions();
-                    if (headless) opts.addArguments("--headless=new");
-                    yield opts;
-                }
-                case "firefox" -> {
-                    FirefoxOptions opts = new FirefoxOptions();
-                    if (headless) opts.addArguments("-headless");
-                    yield opts;
-                }
-                case "edge" -> {
-                    EdgeOptions opts = new EdgeOptions();
-                    if (headless) opts.addArguments("--headless=new");
-                    yield opts;
-                }
+            Capabilities options = switch (browserName.trim().toLowerCase()) {
+                case "chrome" -> createChromeOptions(headless);
+                case "firefox" -> createFirefoxOptions(headless);
+                case "edge" -> createEdgeOptions(headless);
                 default -> throw new IllegalArgumentException(
                         "Unsupported browser '" + browserName + "'. Choose chrome, firefox, or edge.");
             };
 
-            return new RemoteWebDriver(new URL(remoteUrl), options);
-        } catch (MalformedURLException exception) {
+            return new RemoteWebDriver(URI.create(remoteUrl).toURL(), options);
+        } catch (MalformedURLException | IllegalArgumentException exception) {
             throw new IllegalArgumentException("Invalid remote URL: " + remoteUrl, exception);
         }
     }

@@ -30,12 +30,16 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Run framework unit tests
-        run: mvn --batch-mode --no-transfer-progress clean test -Punit
+      - name: Run quality checks and unit tests
+        run: mvn --batch-mode --no-transfer-progress clean verify -Punit
 
       - name: Validate unit test reports
         if: always()
         run: test -n "$(find target/surefire-reports -type f -name 'TEST-*.xml' -size +0c 2>/dev/null | head -n 1)" || { echo "::error::No non-empty Surefire unit report found"; exit 1; }
+
+      - name: Publish unit test summary
+        if: always()
+        run: python3 .github/scripts/summarize-surefire.py "Framework Quality & Unit Tests"
 
       - name: Upload unit test reports
         # actions/upload-artifact v4.6.2
@@ -54,7 +58,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        browser: [chrome, firefox]
+        browser: [chrome, firefox, edge]
         environment: ${{ fromJSON(vars.STAGING_BASE_URL != '' && '["qa","staging"]' || '["qa"]') }}
 
     steps:
@@ -85,19 +89,25 @@ jobs:
       - name: Run smoke tests
         env:
           BASE_URL: ${{ matrix.environment == 'staging' && vars.STAGING_BASE_URL || '' }}
-        run: mvn --batch-mode --no-transfer-progress clean test -Psmoke -Denv=${{ matrix.environment }} -DbaseUrl="$BASE_URL" -Dbrowser=${{ matrix.browser }} -Dheadless=true -DretryCount=0 -DrunId=${{ github.run_id }}-${{ github.run_attempt }}
+        run: mvn --batch-mode --no-transfer-progress clean test -Psmoke -Denv=${{ matrix.environment }} -DbaseUrl="$BASE_URL" -Dbrowser=${{ matrix.browser }} -Dheadless=true -DpreflightCheck=true -DretryCount=0 -DrunId=${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Validate smoke test reports
         if: always()
         run: test -n "$(find target/surefire-reports -type f -name 'TEST-*.xml' -size +0c 2>/dev/null | head -n 1)" || { echo "::error::No non-empty Surefire smoke report found"; exit 1; }
+
+      - name: Publish smoke test summary
+        if: always()
+        run: python3 .github/scripts/summarize-surefire.py "Smoke Tests (${{ matrix.environment }} / ${{ matrix.browser }})"
 
       - name: Record browser and driver versions
         if: always()
         run: |
           google-chrome --version || true
           firefox --version || true
+          microsoft-edge --version || true
           chromedriver --version || true
           geckodriver --version || true
+          msedgedriver --version || true
 
       - name: Upload test reports
         # actions/upload-artifact v4.6.2
@@ -108,6 +118,7 @@ jobs:
           path: |
             target/extent-reports/
             target/screenshots/
+            target/diagnostics/
             target/logs/
             target/surefire-reports/
           retention-days: 30
@@ -138,11 +149,15 @@ jobs:
       - name: Run regression tests
         env:
           BASE_URL: ${{ matrix.environment == 'staging' && vars.STAGING_BASE_URL || '' }}
-        run: mvn --batch-mode --no-transfer-progress clean test -Pregression -Denv=${{ matrix.environment }} -DbaseUrl="$BASE_URL" -Dbrowser=firefox -Dheadless=true -DretryCount=0 -DrunId=${{ github.run_id }}-${{ github.run_attempt }}
+        run: mvn --batch-mode --no-transfer-progress clean test -Pregression -Denv=${{ matrix.environment }} -DbaseUrl="$BASE_URL" -Dbrowser=firefox -Dheadless=true -DpreflightCheck=true -DretryCount=0 -DrunId=${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Validate regression test reports
         if: always()
         run: test -n "$(find target/surefire-reports -type f -name 'TEST-*.xml' -size +0c 2>/dev/null | head -n 1)" || { echo "::error::No non-empty Surefire regression report found"; exit 1; }
+
+      - name: Publish regression test summary
+        if: always()
+        run: python3 .github/scripts/summarize-surefire.py "Regression Tests (${{ matrix.environment }} / firefox)"
 
       - name: Record browser and driver versions
         if: always()
@@ -159,6 +174,7 @@ jobs:
           path: |
             target/extent-reports/
             target/screenshots/
+            target/diagnostics/
             target/logs/
             target/surefire-reports/
           retention-days: 30

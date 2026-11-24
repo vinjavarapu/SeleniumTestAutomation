@@ -53,6 +53,26 @@ public final class FrameworkConfig {
         return ConfigReader.environment();
     }
 
+    public static boolean preflightCheck() {
+        String value = ConfigReader.getOptional("preflightCheck", "false");
+        if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
+            throw new IllegalArgumentException("Invalid boolean for preflightCheck: " + value);
+        }
+        return Boolean.parseBoolean(value);
+    }
+
+    public static long preflightTimeoutSeconds() {
+        long value = Long.parseLong(ConfigReader.getOptional("preflightTimeoutSeconds", "10"));
+        if (value <= 0) {
+            throw new IllegalArgumentException("preflightTimeoutSeconds must be greater than zero");
+        }
+        return value;
+    }
+
+    public static String testDataFile() {
+        return ConfigReader.getOptional("testDataFile", "/testdata/saucedemo.properties");
+    }
+
     public static void validate() {
         validateEnvironmentBaseUrl(environment(), ConfigReader.hasExplicitValue("baseUrl"));
 
@@ -65,6 +85,8 @@ public final class FrameworkConfig {
         explicitWaitSeconds();
         retryCount();
         headless();
+        preflightCheck();
+        preflightTimeoutSeconds();
 
         String remote = remoteUrl();
         if (!remote.isBlank()) validateHttpUrl("remoteUrl", remote);

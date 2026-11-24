@@ -33,20 +33,26 @@ flowchart LR
 ## Repository layout
 
 ```text
-src/test/java/io/github/vinjavarapu/seleniumtestautomation/framework/
-  base/          Browser lifecycle and shared page actions
-  config/        Configuration loading and validation
+src/main/java/io/github/vinjavarapu/seleniumtestautomation/framework/
+  api/           Lightweight REST client for API-backed setup and teardown
+  base/          Browser lifecycle and shared page/storage actions
+  config/        Configuration loading, validation, and environment preflight
   driver/        Local/remote driver factory and thread-local storage
-  listeners/     Test lifecycle, reporting, and optional retries
-  pages/         SauceDemo page objects
+  listeners/     Test lifecycle, reporting, diagnostics, and per-invocation retries
   reporting/     Test-step reporting bridge
-  unittests/     Fast framework unit tests
-  utils/         Wait, CSV/properties test-data, and ExtentReports helpers
+  utils/         Wait, CSV/properties test-data, diagnostics, and ExtentReports helpers
+src/test/java/io/github/vinjavarapu/seleniumtestautomation/framework/
+  pages/         SauceDemo page objects
   tests/         Smoke and regression browser tests
+  api/, base/, config/, listeners/, unittests/, utils/   Fast framework unit tests
 src/test/resources/
   config/        QA and staging overrides
   suites/        Unit, smoke, regression, and all-test suites
   testdata/      Public SauceDemo fixture values
+config/
+  checkstyle/    Checkstyle rules enforced during mvn verify
+  spotbugs/      SpotBugs exclusion filter
+docker-compose.grid.yml
 .github/workflows/selenium-tests.yml
 ```
 
@@ -55,14 +61,22 @@ src/test/resources/
 Requires JDK 25 and Maven.
 
 ```powershell
-# Fast, browser-free framework checks
-mvn --batch-mode test -Punit
+# Enforcer, unit tests, Checkstyle, and SpotBugs
+mvn --batch-mode clean verify -Punit
 
 # Browser smoke tests
 mvn --batch-mode test -Psmoke
 
 # Full browser regression suite
 mvn --batch-mode test -Pregression
+```
+
+### Run against local Docker Selenium Grid
+
+```powershell
+docker compose -f docker-compose.grid.yml up -d
+mvn --batch-mode test -Pregression -DremoteUrl=http://localhost:4444/wd/hub -Dbrowser=chrome -DpreflightCheck=true
+docker compose -f docker-compose.grid.yml down
 ```
 
 The browser suites use headless mode by default. Override settings with Maven system properties:

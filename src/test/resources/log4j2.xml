@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN" monitorInterval="60">
     <Properties>
-        <Property name="logPattern">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %c{1} - %msg%n</Property>
+        <Property name="logPattern">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %c{1} [%X{testName}] - %msg%n</Property>
         <Property name="logDirectory">target/logs</Property>
     </Properties>
 

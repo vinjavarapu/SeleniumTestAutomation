@@ -87,7 +87,10 @@ public final class ConfigReader {
                 "explicitWaitSeconds", "EXPLICIT_WAIT_SECONDS",
                 "retryCount", "RETRY_COUNT",
                 "remoteUrl", "REMOTE_URL",
-                "reportName", "REPORT_NAME"
+                "reportName", "REPORT_NAME",
+                "preflightCheck", "PREFLIGHT_CHECK",
+                "preflightTimeoutSeconds", "PREFLIGHT_TIMEOUT_SECONDS",
+                "testDataFile", "TEST_DATA_FILE"
         );
         String environmentName = keyNames.get(key);
         return environmentName == null ? null : System.getenv(environmentName);

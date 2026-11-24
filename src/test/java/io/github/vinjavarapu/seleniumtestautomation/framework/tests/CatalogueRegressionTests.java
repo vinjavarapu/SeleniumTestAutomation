@@ -19,10 +19,7 @@ import io.github.vinjavarapu.seleniumtestautomation.framework.pages.ProductDetai
 import io.github.vinjavarapu.seleniumtestautomation.framework.utils.CsvTestDataReader;
 import io.github.vinjavarapu.seleniumtestautomation.framework.utils.TestDataReader;
 import org.openqa.selenium.Dimension;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chromium.ChromiumDriver;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -96,7 +93,8 @@ public class CatalogueRegressionTests extends BaseTest {
         InventoryPage inventory = login();
         TestStepReporter.assertEquals(inventory.getProductNames().size(), 6);
         TestStepReporter.assertEquals(inventory.getProductPrices().size(), 6);
-        TestStepReporter.assertTrue(inventory.productActionButtonsAreVisible(), "Each product should have a visible cart control");
+        TestStepReporter.assertTrue(inventory.productActionButtonsAreVisible(),
+                "Each product should have a visible cart control");
         TestStepReporter.assertEquals(inventory.getProductImageSources().size(), 6);
         TestStepReporter.assertTrue(inventory.getProductImagesLoaded().stream().allMatch(Boolean::booleanValue),
                 "All inventory images should load");
@@ -112,7 +110,8 @@ public class CatalogueRegressionTests extends BaseTest {
         TestStepReporter.assertFalse(details.getDescription().isBlank());
         TestStepReporter.assertEquals(details.getPrice(), TestDataReader.get("product.price"));
         TestStepReporter.assertTrue(details.isImageVisible());
-        TestStepReporter.assertTrue(details.isImageLoaded(), "Product detail image should load without a broken-image placeholder");
+        TestStepReporter.assertTrue(details.isImageLoaded(),
+                "Product detail image should load without a broken-image placeholder");
         details.backToProducts();
         TestStepReporter.assertTrue(new InventoryPage(getDriver()).containsProduct(expectedName));
     }
@@ -366,31 +365,19 @@ public class CatalogueRegressionTests extends BaseTest {
     public void keyboardNavigationOperatesLoginAndShoppingFlow() {
         LoginPage page = new LoginPage(getDriver());
         page.open();
-        TestStepReporter.record("Entering credentials and moving through the login form with the keyboard");
-        WebElement username = getDriver().findElement(By.id("user-name"));
-        WebElement password = getDriver().findElement(By.id("password"));
-        username.sendKeys(TestDataReader.get("valid.username"), Keys.TAB);
-        TestStepReporter.assertEquals(activeElementId(), "password", "Tab should move from username to password");
-        password.sendKeys(TestDataReader.get("valid.password"), Keys.ENTER);
+        TestStepReporter.assertEquals(
+                page.tabFromUsernameWithValue(TestDataReader.get("valid.username")),
+                "password",
+                "Tab should move from username to password");
+        page.enterPasswordAndSubmitWithEnter(TestDataReader.get("valid.password"));
 
         InventoryPage inventory = new InventoryPage(getDriver());
         TestStepReporter.assertTrue(inventory.isLoaded(), "Enter should submit the login form");
 
         String productName = TestDataReader.get("product.name");
-        TestStepReporter.record("Using keyboard tab navigation to focus the product cart control");
-        String addButtonTestId = "add-to-cart-" + productName.toLowerCase().replaceAll("[^a-z0-9]+", "-");
-        boolean addButtonFocused = false;
-        for (int tab = 0; tab < 50; tab++) {
-            getDriver().switchTo().activeElement().sendKeys(Keys.TAB);
-            if (Boolean.TRUE.equals(((JavascriptExecutor) getDriver()).executeScript(
-                    "return document.activeElement.getAttribute('data-test') === arguments[0]", addButtonTestId))) {
-                addButtonFocused = true;
-                break;
-            }
-        }
-        TestStepReporter.assertTrue(addButtonFocused, "Tab order should reach the product Add to cart control");
-        TestStepReporter.record("Adding the focused product to the cart with the Space key");
-        getDriver().switchTo().activeElement().sendKeys(Keys.SPACE);
+        TestStepReporter.assertTrue(inventory.focusProductCartControlWithTab(productName),
+                "Tab order should reach the product Add to cart control");
+        inventory.activateFocusedControlWithSpace();
         TestStepReporter.assertEquals(inventory.getCartItemCount(), 1, "Space should activate the focused Add to cart button");
         TestStepReporter.assertTrue(inventory.hasRemoveButton(productName),
                 "Space should change the focused product control to Remove");
@@ -400,11 +387,7 @@ public class CatalogueRegressionTests extends BaseTest {
     public void keyboardNavigationMovesThroughLoginForm() {
         LoginPage page = new LoginPage(getDriver());
         page.open();
-        TestStepReporter.record("Moving focus from username to password with the Tab key");
-        getDriver().findElement(By.id("user-name")).sendKeys(Keys.TAB);
-        String focusedId = (String) ((JavascriptExecutor) getDriver())
-                .executeScript("return document.activeElement.id");
-        TestStepReporter.assertEquals(focusedId, "password");
+        TestStepReporter.assertEquals(page.tabFromUsername(), "password");
     }
 
     @Test(description = "SD-037..038: Checkout accepts punctuation and long customer values safely")
@@ -448,7 +431,9 @@ public class CatalogueRegressionTests extends BaseTest {
         BigDecimal subtotal = money(overview.getSubtotal());
         TestStepReporter.assertEquals(subtotal, itemSum);
         overview.placeOrder();
-        TestStepReporter.assertEquals(new CheckoutCompletePage(getDriver()).getConfirmationMessage(), "Thank you for your order!");
+        TestStepReporter.assertEquals(
+                new CheckoutCompletePage(getDriver()).getConfirmationMessage(),
+                "Thank you for your order!");
     }
 
     @Test(description = "SD-053: Inventory cards and controls remain usable at desktop and narrow viewports")
@@ -478,8 +463,11 @@ public class CatalogueRegressionTests extends BaseTest {
             getDriver().manage().window().setSize(new Dimension(width, height));
         }
         getWait().until(driver -> {
-            int actualWidth = ((Number) ((JavascriptExecutor) driver).executeScript("return window.innerWidth"))
-                    .intValue();
+            Object widthResult = ((JavascriptExecutor) driver).executeScript("return window.innerWidth");
+            if (!(widthResult instanceof Number number)) {
+                return false;
+            }
+            int actualWidth = number.intValue();
             return Math.abs(actualWidth - width) <= 16
                     || (width < 600 && actualWidth >= width - 100 && actualWidth <= 600);
         });
@@ -524,40 +512,18 @@ public class CatalogueRegressionTests extends BaseTest {
         page.open();
 
         TestStepReporter.record("Checking keyboard focus indicators on login controls");
-        WebElement usernameField = getDriver().findElement(By.id("user-name"));
-        WebElement passwordField = getDriver().findElement(By.id("password"));
-        WebElement loginButton = getDriver().findElement(By.id("login-button"));
+        TestStepReporter.assertEquals(page.tabFromUsername(), "password", "Tab should focus password field");
+        TestStepReporter.assertTrue(page.isFocusedElementFocusVisible(),
+                "Keyboard-focused password field should match :focus-visible");
 
-        usernameField.sendKeys(Keys.TAB);
-        String focusedPasswordId = (String) ((JavascriptExecutor) getDriver())
-                .executeScript("return document.activeElement.id");
-        TestStepReporter.assertEquals(focusedPasswordId, "password", "Tab should focus password field");
-
-        boolean keyboardFocusVisible = (boolean) ((JavascriptExecutor) getDriver())
-                .executeScript("return document.activeElement.matches(':focus-visible')");
-        TestStepReporter.assertTrue(keyboardFocusVisible, "Keyboard-focused password field should match :focus-visible");
-
-        boolean passwordHasRenderedIndicator = (boolean) ((JavascriptExecutor) getDriver())
-                .executeScript("const style = window.getComputedStyle(document.activeElement); "
-                        + "return (style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0) "
-                        + "|| style.boxShadow !== 'none' "
-                        + "|| document.activeElement.classList.toString().includes('focus') "
-                        + "|| document.activeElement.classList.toString().includes('active')");
-        if (!passwordHasRenderedIndicator) {
+        if (!page.hasFocusedElementRenderedIndicator()) {
             logger.warn("SD-055: SauceDemo marks the field focus-visible but exposes no computed outline or focus style");
         }
 
-        passwordField.sendKeys(Keys.TAB);
-        String focusedLoginId = (String) ((JavascriptExecutor) getDriver())
-                .executeScript("return document.activeElement.id");
-        TestStepReporter.assertEquals(focusedLoginId, "login-button", "Tab should focus login button");
+        TestStepReporter.assertEquals(page.tabFromPassword(), "login-button", "Tab should focus login button");
     }
 
     private static BigDecimal money(String text) {
         return new BigDecimal(text.replaceAll("[^0-9.]", "")).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private String activeElementId() {
-        return (String) ((JavascriptExecutor) getDriver()).executeScript("return document.activeElement.id");
     }
 }

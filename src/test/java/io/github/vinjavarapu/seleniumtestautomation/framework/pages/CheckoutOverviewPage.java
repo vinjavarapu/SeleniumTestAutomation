@@ -45,9 +45,17 @@ public class CheckoutOverviewPage extends BasePage {
         return driver.findElements(By.cssSelector(".cart_item .cart_quantity")).stream()
                 .map(WebElement::getText).toList();
     }
-    public String getSubtotal() { return readText(subtotal); }
-    public String getTax() { return readText(tax); }
-    public String getTotal() { return readText(total); }
+    public String getSubtotal() {
+        return readText(subtotal);
+    }
+
+    public String getTax() {
+        return readText(tax);
+    }
+
+    public String getTotal() {
+        return readText(total);
+    }
     public void cancel() {
         click(cancelButton, "Canceling from order overview");
         wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory.html"));

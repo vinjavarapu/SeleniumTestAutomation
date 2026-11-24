@@ -60,51 +60,59 @@ public final class ExtentReportManager {
             })();
             """;
     private static final ThreadLocal<ExtentTest> CURRENT_TEST = new ThreadLocal<>();
+    private static final Object LOCK = new Object();
     private static ExtentReports extent;
     private static Path reportPath;
 
     private ExtentReportManager() {
     }
 
-    private static synchronized ExtentReports getExtent() {
-        if (extent == null) {
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS"));
-            String runId = System.getProperty("runId", "local").replaceAll("[^a-zA-Z0-9._-]", "_");
-            String environment = FrameworkConfig.environment().replaceAll("[^a-zA-Z0-9._-]", "_");
-            String browser = FrameworkConfig.browser().replaceAll("[^a-zA-Z0-9._-]", "_");
-            reportPath = Path.of("target", "extent-reports",
-                    "Test-Report-" + environment + "-" + browser + "-" + runId + "-" + timestamp + ".html");
-            try {
-                Files.createDirectories(reportPath.getParent());
-            } catch (Exception exception) {
-                throw new IllegalStateException("Could not create the Extent report directory", exception);
+    private static ExtentReports getExtent() {
+        synchronized (LOCK) {
+            if (extent == null) {
+                String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS"));
+                String runId = System.getProperty("runId", "local").replaceAll("[^a-zA-Z0-9._-]", "_");
+                String environment = FrameworkConfig.environment().replaceAll("[^a-zA-Z0-9._-]", "_");
+                String browser = FrameworkConfig.browser().replaceAll("[^a-zA-Z0-9._-]", "_");
+                reportPath = Path.of("target", "extent-reports",
+                        "Test-Report-" + environment + "-" + browser + "-" + runId + "-" + timestamp + ".html");
+                try {
+                    Path parent = reportPath.getParent();
+                    if (parent != null) {
+                        Files.createDirectories(parent);
+                    }
+                } catch (Exception exception) {
+                    throw new IllegalStateException("Could not create the Extent report directory", exception);
+                }
+                ExtentSparkReporter spark = new ExtentSparkReporter(reportPath.toString());
+                spark.config().setDocumentTitle("Test Automation Results");
+                spark.config().setReportName(FrameworkConfig.reportName());
+                spark.config().setTheme(Theme.DARK);
+                spark.config().setJs(REPORT_SUMMARY_SCRIPT);
+                spark.config().setTimelineEnabled(true);
+                extent = new ExtentReports();
+                extent.attachReporter(spark);
+                extent.setSystemInfo("Framework", "Selenium + Java + TestNG");
+                extent.setSystemInfo("Environment", FrameworkConfig.environment());
+                extent.setSystemInfo("Application URL", UrlRedactor.redact(FrameworkConfig.baseUrl()));
+                extent.setSystemInfo("Browser", FrameworkConfig.browser());
+                extent.setSystemInfo("Browser Version", browserVersion());
+                extent.setSystemInfo("Headless", String.valueOf(FrameworkConfig.headless()));
+                extent.setSystemInfo("OS Name", System.getProperty("os.name", "Unknown"));
+                extent.setSystemInfo("OS Version", System.getProperty("os.version", "Unknown"));
+                extent.setSystemInfo("Java Version", System.getProperty("java.version", "Unknown"));
+                extent.setSystemInfo("Executed By", System.getProperty("user.name", "Unknown"));
             }
-            ExtentSparkReporter spark = new ExtentSparkReporter(reportPath.toString());
-            spark.config().setDocumentTitle("Test Automation Results");
-            spark.config().setReportName(FrameworkConfig.reportName());
-            spark.config().setTheme(Theme.DARK);
-            spark.config().setJs(REPORT_SUMMARY_SCRIPT);
-            spark.config().setTimelineEnabled(true);
-            extent = new ExtentReports();
-            extent.attachReporter(spark);
-            extent.setSystemInfo("Framework", "Selenium + Java + TestNG");
-            extent.setSystemInfo("Environment", FrameworkConfig.environment());
-            extent.setSystemInfo("Application URL", UrlRedactor.redact(FrameworkConfig.baseUrl()));
-            extent.setSystemInfo("Browser", FrameworkConfig.browser());
-            extent.setSystemInfo("Browser Version", browserVersion());
-            extent.setSystemInfo("Headless", String.valueOf(FrameworkConfig.headless()));
-            extent.setSystemInfo("OS Name", System.getProperty("os.name", "Unknown"));
-            extent.setSystemInfo("OS Version", System.getProperty("os.version", "Unknown"));
-            extent.setSystemInfo("Java Version", System.getProperty("java.version", "Unknown"));
-            extent.setSystemInfo("Executed By", System.getProperty("user.name", "Unknown"));
+            return extent;
         }
-        return extent;
     }
 
     public static void startTest(String name, String description, String... categories) {
-        ExtentTest test = getExtent().createTest(name, description == null ? "" : description);
-        if (categories != null && categories.length > 0) test.assignCategory(categories);
-        CURRENT_TEST.set(test);
+        synchronized (LOCK) {
+            ExtentTest test = getExtent().createTest(name, description == null ? "" : description);
+            if (categories != null && categories.length > 0) test.assignCategory(categories);
+            CURRENT_TEST.set(test);
+        }
     }
 
     public static void step(String message) {
@@ -134,15 +142,19 @@ public final class ExtentReportManager {
         if (test != null) test.skip(message);
     }
 
-    public static synchronized void flush() {
-        if (extent != null) extent.flush();
+    public static void flush() {
+        synchronized (LOCK) {
+            if (extent != null) extent.flush();
+        }
     }
 
     public static Path reportPath() {
-        if (reportPath == null) {
-            getExtent();
+        synchronized (LOCK) {
+            if (reportPath == null) {
+                getExtent();
+            }
+            return reportPath;
         }
-        return reportPath;
     }
 
     public static void clearCurrentTest() {

@@ -4,6 +4,8 @@ import io.github.vinjavarapu.seleniumtestautomation.framework.base.BasePage;
 import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStepReporter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import java.util.List;
@@ -60,8 +62,8 @@ public class InventoryPage extends BasePage {
     public List<Boolean> getProductImagesLoaded() {
         wait.until(d -> d.findElements(productNames).size() > 0);
         return driver.findElements(By.cssSelector(".inventory_item_img img")).stream()
-                .map(image -> Boolean.parseBoolean(image.getDomProperty("complete"))
-                        && !"0".equals(image.getDomProperty("naturalWidth"))).toList();
+                .map(this::isImageLoaded)
+                .toList();
     }
 
     public boolean productCardsFitViewport() {
@@ -101,8 +103,9 @@ public class InventoryPage extends BasePage {
                 .anyMatch(link -> link.getText().equals(productName)));
         List<WebElement> links = driver.findElements(productNames);
         links.stream().filter(link -> link.getText().equals(productName)).findFirst()
-                .orElseThrow(() -> new AssertionError("Product not found in inventory: " + productName)).click();
-        wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("inventory-item.html"));
+                .orElseThrow(() -> new NoSuchElementException("Product not found in inventory: " + productName))
+                .click();
+        waitForUrlContains("inventory-item.html");
     }
 
     public void openMenu() {
@@ -139,7 +142,10 @@ public class InventoryPage extends BasePage {
     public void logout() {
         openMenu();
         click(logoutLink, "Logging out");
-        wait.until(driver -> !driver.getCurrentUrl().contains("inventory.html"));
+        wait.until(driver -> {
+            String currentUrl = driver.getCurrentUrl();
+            return currentUrl != null && !currentUrl.contains("inventory.html");
+        });
     }
     public void resetAppState() {
         openMenu();
@@ -163,8 +169,31 @@ public class InventoryPage extends BasePage {
         return driver.findElements(By.cssSelector("[data-test='remove-" + productId(productName) + "']")).size() > 0;
     }
 
-    private String productId(String productName) {
+    static String productSlug(String productName) {
         return productName.trim().toLowerCase().replaceAll("[^a-z0-9]+", "-");
+    }
+
+    private String productId(String productName) {
+        return productSlug(productName);
+    }
+
+    public boolean focusProductCartControlWithTab(String productName) {
+        TestStepReporter.record("Using keyboard tab navigation to focus the product cart control");
+        String addButtonTestId = "add-to-cart-" + productSlug(productName);
+        for (int tab = 0; tab < 50; tab++) {
+            driver.switchTo().activeElement().sendKeys(Keys.TAB);
+            if (Boolean.TRUE.equals(((JavascriptExecutor) driver).executeScript(
+                    "return document.activeElement !== null && document.activeElement.getAttribute('data-test') === arguments[0]",
+                    addButtonTestId))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void activateFocusedControlWithSpace() {
+        TestStepReporter.record("Activating the focused control with the Space key");
+        driver.switchTo().activeElement().sendKeys(Keys.SPACE);
     }
 
     public void addProductToCart(String productName) {
