@@ -91,7 +91,7 @@ QA and staging intentionally use the same public SauceDemo sandbox URL. A CI sta
 
 ## CI and artifacts
 
-GitHub Actions runs the unit suite and browser suites on pull requests, pushes to `main`, manual dispatches, and the nightly schedule. Chrome/Firefox smoke and Chrome regression runs use QA by default. Setting the repository variable `STAGING_BASE_URL` adds staging runs; `CHROME_VERSION` can pin the Chrome for Testing version. CI retries are disabled so a first-attempt failure remains visible.
+GitHub Actions runs the unit suite and browser suites on pull requests, pushes to `main`, manual dispatches, and the nightly schedule. Chrome/Firefox smoke and Chrome regression runs use QA by default. Setting the repository variable `STAGING_BASE_URL` adds staging runs; `CHROME_VERSION` can pin the Chrome for Testing version. WebDriverManager resolves the ChromeDriver for the installed Chrome version. CI retries are disabled so a first-attempt failure remains visible.
 
 Run artifacts include Surefire XML, Extent HTML reports, logs, and failure screenshots under `target/`. CI uploads browser-run artifacts for 30 days.
 
@@ -107,7 +107,7 @@ Requires the project prerequisites above (JDK 25 and Maven 3.8.1 or later). Run 
 mvn --batch-mode --no-transfer-progress -Psecurity verify -DskipTests
 ```
 
-The scan uses Dependency-Check Maven 12.2.2. Although 13.0.0 is the latest published release, its keyless NVD update path is broken ([upstream issue #8715](https://github.com/dependency-check/DependencyCheck/issues/8715)); the fix is assigned to 13.0.1, which is not yet published. Version 12.2.2 is used so an initial scan can work without a key. Reassess the plugin version when the upstream fix is released. The first scan downloads and initializes the vulnerability database and can take 20 minutes or longer. Later scans reuse the local Dependency-Check database and update it automatically; do not disable those updates. The optional .NET assembly analyzer is disabled because this project scans Java/Maven dependencies. Reports are written to `target/security-dependency-check/`:
+The scan uses Dependency-Check Maven 12.2.2. Although 13.0.0 is the latest published release, its keyless NVD update path is broken ([upstream issue #8715](https://github.com/dependency-check/DependencyCheck/issues/8715)); the fix is assigned to 13.0.1, which is not yet published. Version 12.2.2 is used so an initial scan can work without a key. Reassess the plugin version when the upstream fix is released. The first scan downloads and initializes the vulnerability database and can take 20 minutes or longer. Later scans reuse the cached Dependency-Check database and update it automatically; scans are serialized in GitHub Actions to avoid concurrent NVD requests. Do not disable database updates. The optional .NET assembly analyzer is disabled because this project scans Java/Maven dependencies. Reports are written to `target/security-dependency-check/`:
 
 - `dependency-check-report.html` — human-readable findings and remediation details.
 - `dependency-check-report.json` — machine-readable dependency, CVE, CVSS, and vulnerability data.

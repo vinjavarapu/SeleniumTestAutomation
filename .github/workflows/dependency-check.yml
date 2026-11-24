@@ -17,6 +17,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: dependency-check
+  cancel-in-progress: false
+
 jobs:
   dependency-check:
     name: OWASP Dependency-Check

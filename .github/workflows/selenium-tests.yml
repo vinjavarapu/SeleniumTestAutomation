@@ -70,21 +70,17 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Install controlled Chrome and matching driver
+      - name: Install controlled Chrome
         # browser-actions/setup-chrome v2.1.1
         uses: browser-actions/setup-chrome@4f8e94349a351df0f048634f25fec36c3c91eded
         if: matrix.browser == 'chrome'
         with:
           chrome-version: ${{ vars.CHROME_VERSION || 'stable' }}
-          install-chromedriver: true
+          install-chromedriver: false
 
-      - name: Validate Chrome and ChromeDriver major versions
+      - name: Validate Chrome installation
         if: matrix.browser == 'chrome'
-        run: |
-          browser_major="$(google-chrome --version | grep -oE '[0-9]+' | head -n 1)"
-          driver_major="$(chromedriver --version | grep -oE '[0-9]+' | head -n 1)"
-          echo "Chrome major: $browser_major; ChromeDriver major: $driver_major"
-          test "$browser_major" = "$driver_major"
+        run: google-chrome --version
 
       - name: Run smoke tests
         env:
@@ -139,19 +135,15 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Install controlled Chrome and matching driver
+      - name: Install controlled Chrome
         # browser-actions/setup-chrome v2.1.1
         uses: browser-actions/setup-chrome@4f8e94349a351df0f048634f25fec36c3c91eded
         with:
           chrome-version: ${{ vars.CHROME_VERSION || 'stable' }}
-          install-chromedriver: true
+          install-chromedriver: false
 
-      - name: Validate Chrome and ChromeDriver major versions
-        run: |
-          browser_major="$(google-chrome --version | grep -oE '[0-9]+' | head -n 1)"
-          driver_major="$(chromedriver --version | grep -oE '[0-9]+' | head -n 1)"
-          echo "Chrome major: $browser_major; ChromeDriver major: $driver_major"
-          test "$browser_major" = "$driver_major"
+      - name: Validate Chrome installation
+        run: google-chrome --version
 
       - name: Run regression tests
         env:
