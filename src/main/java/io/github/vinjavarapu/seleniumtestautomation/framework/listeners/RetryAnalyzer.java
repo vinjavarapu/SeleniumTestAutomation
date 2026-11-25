@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.testng.IRetryAnalyzer;
 import org.testng.ITestResult;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -29,7 +30,7 @@ public class RetryAnalyzer implements IRetryAnalyzer {
 
     @Override
     public boolean retry(ITestResult result) {
-        int maxRetries = FrameworkConfig.retryCount();
+        int maxRetries = getMaxRetries(result);
         String key = invocationKey(result);
         AtomicInteger attempts = retryCounts.computeIfAbsent(key, ignored -> new AtomicInteger(0));
         if (!result.isSuccess() && attempts.get() < maxRetries) {
@@ -45,6 +46,19 @@ public class RetryAnalyzer implements IRetryAnalyzer {
             RETRY_PENDING.remove();
         }
         return false;
+    }
+
+    private int getMaxRetries(ITestResult result) {
+        try {
+            Method method = result.getMethod().getConstructorOrMethod().getMethod();
+            TestInfo testInfo = method.getAnnotation(TestInfo.class);
+            if (testInfo != null && testInfo.retries() >= 0) {
+                return testInfo.retries();
+            }
+        } catch (RuntimeException exception) {
+            LOGGER.debug("Could not read @TestInfo annotation", exception);
+        }
+        return FrameworkConfig.retryCount();
     }
 
     static String invocationKey(ITestResult result) {

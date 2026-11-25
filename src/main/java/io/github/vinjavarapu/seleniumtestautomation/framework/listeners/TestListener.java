@@ -45,7 +45,10 @@ public class TestListener implements ITestListener, ISuiteListener {
         }
 
         String[] groups = result.getMethod().getGroups();
-        if (groups == null || groups.length == 0) {
+        TestInfo testInfo = method.getAnnotation(TestInfo.class);
+        if (testInfo != null && !testInfo.feature().isEmpty()) {
+            groups = appendFeatureAndSeverity(groups, testInfo);
+        } else if (groups == null || groups.length == 0) {
             groups = new String[] {defaultCategory(method)};
         }
         ExtentReportManager.startTest(testName, result.getMethod().getDescription(), groups);
@@ -53,6 +56,15 @@ public class TestListener implements ITestListener, ISuiteListener {
         TestStepReporter.register(ExtentReportManager::step, ExtentReportManager::pass);
         TestStepReporter.record("Starting test execution");
         LOGGER.info("Test started: {}", testName);
+    }
+
+    private String[] appendFeatureAndSeverity(String[] groups, TestInfo testInfo) {
+        String[] extended = groups == null || groups.length == 0 ? new String[2] : Arrays.copyOf(groups, groups.length + 2);
+        extended[Math.max(0, groups == null ? 0 : groups.length)] = testInfo.feature();
+        if (!testInfo.severity().isEmpty()) {
+            extended[extended.length - 1] = testInfo.severity();
+        }
+        return extended;
     }
 
     @Override

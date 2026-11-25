@@ -240,6 +240,12 @@
             </properties>
         </profile>
         <profile>
+            <id>critical</id>
+            <properties>
+                <suite.xml>src/test/resources/suites/critical.xml</suite.xml>
+            </properties>
+        </profile>
+        <profile>
             <id>security</id>
             <properties>
                 <suite.xml>src/test/resources/suites/unit.xml</suite.xml>

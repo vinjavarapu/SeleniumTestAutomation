@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Critical Tests">
+    <listeners>
+        <listener class-name="io.github.vinjavarapu.seleniumtestautomation.framework.listeners.TestListener"/>
+        <listener class-name="io.github.vinjavarapu.seleniumtestautomation.framework.listeners.RetryTransformer"/>
+    </listeners>
+    <test name="Critical">
+        <groups>
+            <run>
+                <include name="critical"/>
+            </run>
+        </groups>
+        <packages>
+            <package name="io.github.vinjavarapu.seleniumtestautomation.tests"/>
+        </packages>
+    </test>
+</suite>
