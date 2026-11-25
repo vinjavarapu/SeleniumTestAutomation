@@ -1,0 +1,17 @@
+[
+  {
+    "username": "unknown-user",
+    "password": "secret_sauce",
+    "expectedMessage": "do not match"
+  },
+  {
+    "username": "standard_user",
+    "password": "wrong_password",
+    "expectedMessage": "do not match"
+  },
+  {
+    "username": "",
+    "password": "",
+    "expectedMessage": "Username is required"
+  }
+]

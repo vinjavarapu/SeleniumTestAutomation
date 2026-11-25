@@ -12,6 +12,7 @@
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.listeners.RetryAnalyzerTest"/>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.utils.CsvTestDataReaderTest"/>
             <class name="io.github.vinjavarapu.seleniumtestautomation.framework.utils.UrlRedactorTest"/>
+            <class name="io.github.vinjavarapu.seleniumtestautomation.framework.data.TestDataLoaderTest"/>
         </classes>
     </test>
 </suite>
