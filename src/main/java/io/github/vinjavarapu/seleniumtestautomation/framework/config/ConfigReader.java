@@ -2,8 +2,8 @@ package io.github.vinjavarapu.seleniumtestautomation.framework.config;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
 
 /** Loads immutable test configuration with environment and JVM overrides. */
@@ -54,6 +54,75 @@ public final class ConfigReader {
         return isSet(value) ? value.trim() : defaultValue;
     }
 
+    public static boolean getBoolean(String key, boolean defaultValue) {
+        String value = getOptional(key, String.valueOf(defaultValue));
+        if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
+            throw new IllegalArgumentException("Invalid boolean for '" + key + "': " + value);
+        }
+        return Boolean.parseBoolean(value);
+    }
+
+    public static int getInt(String key, int defaultValue, String constraint) {
+        String value = getOptional(key, String.valueOf(defaultValue));
+        int intValue;
+        try {
+            intValue = Integer.parseInt(value);
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException("Invalid integer for '" + key + "': " + value, exception);
+        }
+        validateIntConstraint(key, intValue, constraint);
+        return intValue;
+    }
+
+    public static long getLong(String key, long defaultValue, String constraint) {
+        String value = getOptional(key, String.valueOf(defaultValue));
+        long longValue;
+        try {
+            longValue = Long.parseLong(value);
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException("Invalid long for '" + key + "': " + value, exception);
+        }
+        validateLongConstraint(key, longValue, constraint);
+        return longValue;
+    }
+
+    public static Duration getDuration(String key, Duration defaultValue, String constraint) {
+        String value = getOptional(key, String.valueOf(defaultValue.getSeconds()));
+        long seconds;
+        try {
+            seconds = Long.parseLong(value);
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException("Invalid duration (seconds) for '" + key + "': " + value, exception);
+        }
+        Duration duration = Duration.ofSeconds(seconds);
+        validateDurationConstraint(key, duration, constraint);
+        return duration;
+    }
+
+    private static void validateIntConstraint(String key, int value, String constraint) {
+        if ("positive".equals(constraint) && value <= 0) {
+            throw new IllegalArgumentException(key + " must be greater than zero, but was: " + value);
+        } else if ("non-negative".equals(constraint) && value < 0) {
+            throw new IllegalArgumentException(key + " must be zero or greater, but was: " + value);
+        }
+    }
+
+    private static void validateLongConstraint(String key, long value, String constraint) {
+        if ("positive".equals(constraint) && value <= 0) {
+            throw new IllegalArgumentException(key + " must be greater than zero, but was: " + value);
+        } else if ("non-negative".equals(constraint) && value < 0) {
+            throw new IllegalArgumentException(key + " must be zero or greater, but was: " + value);
+        }
+    }
+
+    private static void validateDurationConstraint(String key, Duration value, String constraint) {
+        if ("positive".equals(constraint) && value.isNegative() || value.isZero()) {
+            throw new IllegalArgumentException(key + " must be greater than zero, but was: " + value.getSeconds() + "s");
+        } else if ("non-negative".equals(constraint) && value.isNegative()) {
+            throw new IllegalArgumentException(key + " must be zero or greater, but was: " + value.getSeconds() + "s");
+        }
+    }
+
     private static String environmentFromSystemProperty() {
         String value = System.getProperty("env");
         return isSet(value) ? value.trim().toLowerCase(Locale.ROOT) : "qa";
@@ -80,19 +149,11 @@ public final class ConfigReader {
     }
 
     private static String environmentValue(String key) {
-        Map<String, String> keyNames = Map.of(
-                "baseUrl", "BASE_URL",
-                "browser", "BROWSER",
-                "headless", "HEADLESS",
-                "explicitWaitSeconds", "EXPLICIT_WAIT_SECONDS",
-                "retryCount", "RETRY_COUNT",
-                "remoteUrl", "REMOTE_URL",
-                "reportName", "REPORT_NAME",
-                "preflightCheck", "PREFLIGHT_CHECK",
-                "preflightTimeoutSeconds", "PREFLIGHT_TIMEOUT_SECONDS",
-                "testDataFile", "TEST_DATA_FILE"
-        );
-        String environmentName = keyNames.get(key);
-        return environmentName == null ? null : System.getenv(environmentName);
+        String envName = toEnvironmentVariableName(key);
+        return System.getenv(envName);
+    }
+
+    private static String toEnvironmentVariableName(String camelCaseKey) {
+        return camelCaseKey.replaceAll("([a-z])([A-Z])", "$1_$2").toUpperCase(Locale.ROOT);
     }
 }

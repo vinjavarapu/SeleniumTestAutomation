@@ -17,28 +17,15 @@ public final class FrameworkConfig {
     }
 
     public static boolean headless() {
-        String value = ConfigReader.getOptional("headless", "true");
-        if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
-            throw new IllegalArgumentException("Invalid boolean for headless: " + value);
-        }
-        return Boolean.parseBoolean(value);
+        return ConfigReader.getBoolean("headless", true);
     }
 
     public static long explicitWaitSeconds() {
-        long value = Long.parseLong(ConfigReader.getOptional("explicitWaitSeconds", "10"));
-        if (value <= 0) throw new IllegalArgumentException("explicitWaitSeconds must be greater than zero");
-        return value;
+        return ConfigReader.getLong("explicitWaitSeconds", 10, "positive");
     }
 
     public static int retryCount() {
-        int retries;
-        try {
-            retries = Integer.parseInt(ConfigReader.getOptional("retryCount", "0"));
-        } catch (NumberFormatException exception) {
-            throw new IllegalArgumentException("retryCount must be a whole number", exception);
-        }
-        if (retries < 0) throw new IllegalArgumentException("retryCount must be zero or greater");
-        return retries;
+        return ConfigReader.getInt("retryCount", 0, "non-negative");
     }
 
     public static String remoteUrl() {
@@ -54,19 +41,11 @@ public final class FrameworkConfig {
     }
 
     public static boolean preflightCheck() {
-        String value = ConfigReader.getOptional("preflightCheck", "false");
-        if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
-            throw new IllegalArgumentException("Invalid boolean for preflightCheck: " + value);
-        }
-        return Boolean.parseBoolean(value);
+        return ConfigReader.getBoolean("preflightCheck", false);
     }
 
     public static long preflightTimeoutSeconds() {
-        long value = Long.parseLong(ConfigReader.getOptional("preflightTimeoutSeconds", "10"));
-        if (value <= 0) {
-            throw new IllegalArgumentException("preflightTimeoutSeconds must be greater than zero");
-        }
-        return value;
+        return ConfigReader.getLong("preflightTimeoutSeconds", 10, "positive");
     }
 
     public static String testDataFile() {
