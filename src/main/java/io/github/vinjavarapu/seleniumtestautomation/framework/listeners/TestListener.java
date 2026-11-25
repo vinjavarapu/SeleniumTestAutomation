@@ -17,18 +17,22 @@ import org.testng.ITestResult;
 import org.testng.ISuiteListener;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** Manages test reporting via ExtentReports and captures screenshots on failure. */
 public class TestListener implements ITestListener, ISuiteListener {
     private static final Logger LOGGER = LogManager.getLogger(TestListener.class);
     private static final Pattern SENSITIVE_PARAMETER = Pattern.compile(
             ".*(password|secret|token|credential).*", Pattern.CASE_INSENSITIVE);
+    private static final ThreadLocal<List<String>> FLAKY_TESTS_PER_SUITE = ThreadLocal.withInitial(ArrayList::new);
 
     @Override
     public void onStart(ITestContext context) {
@@ -71,6 +75,9 @@ public class TestListener implements ITestListener, ISuiteListener {
     public void onTestSuccess(ITestResult result) {
         boolean retried = RetryAnalyzer.consumeRetriedOutcome() || result.wasRetried();
         LOGGER.info(retried ? "Test passed after retry: {}" : "Test passed: {}", result.getName());
+        if (retried) {
+            FLAKY_TESTS_PER_SUITE.get().add(result.getName());
+        }
         try {
             ExtentReportManager.pass(retried
                     ? "Test passed after a retry; see the earlier failed attempt in this report and CI logs"
@@ -116,6 +123,7 @@ public class TestListener implements ITestListener, ISuiteListener {
     @Override
     public void onStart(org.testng.ISuite suite) {
         LOGGER.info("Starting suite: {}", suite.getName());
+        FLAKY_TESTS_PER_SUITE.set(new ArrayList<>());
     }
 
     @Override
@@ -123,6 +131,29 @@ public class TestListener implements ITestListener, ISuiteListener {
         LOGGER.info("Finishing suite: {}", suite.getName());
         ExtentReportManager.flush();
         LOGGER.info("Extent report saved to {}", ExtentReportManager.reportPath().toAbsolutePath());
+        recordFlakyTests();
+    }
+
+    private void recordFlakyTests() {
+        List<String> flakyTests = FLAKY_TESTS_PER_SUITE.get();
+        try {
+            if (flakyTests.isEmpty()) {
+                LOGGER.info("No flaky tests detected (all tests stable on first attempt or passed with retries)");
+                return;
+            }
+            Path flakyReportPath = Path.of("target", "flaky-tests.json");
+            Path parent = flakyReportPath.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(flakyReportPath.toFile(), flakyTests);
+            LOGGER.info("Flaky tests recorded to {}: {}", flakyReportPath.toAbsolutePath(), flakyTests);
+        } catch (IOException exception) {
+            LOGGER.warn("Could not record flaky tests", exception);
+        } finally {
+            FLAKY_TESTS_PER_SUITE.remove();
+        }
     }
 
     private void captureFailureEvidence(String testName) {
