@@ -114,7 +114,6 @@ public class InventoryPage extends BasePage {
             click(menuButton, "Opening the side menu");
         }
         wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
-        visibleElement(resetLink);
     }
 
     private void waitForMenuButtonUncovered() {
