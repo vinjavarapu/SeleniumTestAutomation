@@ -5,7 +5,6 @@ import io.github.vinjavarapu.seleniumtestautomation.framework.reporting.TestStep
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import java.util.List;
@@ -98,14 +97,13 @@ public class InventoryPage extends BasePage {
     }
 
     public void openProductDetails(String productName) {
+        By productLink = By.linkText(productName);
+        WebElement link = wait.clickable(productLink);
         TestStepReporter.record("Opening product details for: " + productName);
-        wait.until(d -> d.findElements(productNames).stream()
-                .anyMatch(link -> link.getText().equals(productName)));
-        List<WebElement> links = driver.findElements(productNames);
-        links.stream().filter(link -> link.getText().equals(productName)).findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Product not found in inventory: " + productName))
-                .click();
-        waitForUrlContains("inventory-item.html");
+        link.click();
+        wait.until(currentDriver -> currentDriver.getCurrentUrl().contains("inventory-item.html")
+                && currentDriver.findElements(By.cssSelector(".inventory_details_name")).stream()
+                .anyMatch(name -> name.isDisplayed() && name.getText().equals(productName)));
     }
 
     public void openMenu() {
