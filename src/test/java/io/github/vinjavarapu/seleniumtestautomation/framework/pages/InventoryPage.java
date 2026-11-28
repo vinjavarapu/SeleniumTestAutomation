@@ -101,9 +101,12 @@ public class InventoryPage extends BasePage {
         WebElement link = wait.clickable(productLink);
         TestStepReporter.record("Opening product details for: " + productName);
         link.click();
-        wait.until(currentDriver -> currentDriver.getCurrentUrl().contains("inventory-item.html")
-                && currentDriver.findElements(By.cssSelector(".inventory_details_name")).stream()
-                .anyMatch(name -> name.isDisplayed() && name.getText().equals(productName)));
+        wait.until(currentDriver -> {
+            String currentUrl = currentDriver.getCurrentUrl();
+            return currentUrl != null && currentUrl.contains("inventory-item.html")
+                    && currentDriver.findElements(By.cssSelector(".inventory_details_name")).stream()
+                    .anyMatch(name -> name.isDisplayed() && name.getText().equals(productName));
+        });
     }
 
     public void openMenu() {
