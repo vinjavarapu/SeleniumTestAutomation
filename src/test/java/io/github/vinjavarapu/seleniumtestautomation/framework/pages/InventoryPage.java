@@ -108,20 +108,31 @@ public class InventoryPage extends BasePage {
 
     public void openMenu() {
         if (!isMenuOpen()) {
-            waitForMenuButtonUncovered();
+            waitForElementUncovered(menuButton);
             click(menuButton, "Opening the side menu");
         }
         wait.until(driver -> "false".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
+        waitForMenuAnimation();
     }
 
-    private void waitForMenuButtonUncovered() {
+    private void waitForMenuAnimation() {
         wait.until(driver -> {
-            WebElement button = driver.findElement(menuButton);
+            WebElement menu = driver.findElement(menuContainer);
             return Boolean.TRUE.equals(((JavascriptExecutor) driver).executeScript(
-                    "const button = arguments[0]; const rect = button.getBoundingClientRect(); "
+                    "return arguments[0].getAnimations().every(animation => "
+                            + "animation.playState !== 'running' && animation.playState !== 'pending');",
+                    menu));
+        });
+    }
+
+    private void waitForElementUncovered(By locator) {
+        wait.until(driver -> {
+            WebElement element = driver.findElement(locator);
+            return Boolean.TRUE.equals(((JavascriptExecutor) driver).executeScript(
+                    "const element = arguments[0]; const rect = element.getBoundingClientRect(); "
                             + "const top = document.elementFromPoint(rect.left + rect.width / 2, "
-                            + "rect.top + rect.height / 2); return top === button || button.contains(top);",
-                    button));
+                            + "rect.top + rect.height / 2); return top === element || element.contains(top);",
+                    element));
         });
     }
 
@@ -131,9 +142,12 @@ public class InventoryPage extends BasePage {
     }
 
     public void closeMenu() {
+        waitForMenuAnimation();
+        waitForElementUncovered(closeMenuButton);
         click(closeMenuButton, "Closing the side menu");
         wait.until(driver -> "true".equals(driver.findElement(menuContainer).getAttribute("aria-hidden")));
-        waitForMenuButtonUncovered();
+        waitForMenuAnimation();
+        waitForElementUncovered(menuButton);
     }
 
     public void logout() {
